@@ -24,8 +24,76 @@ def plot_animals(categories):
     plt.show()
     return
 
-def plot_locations(data):
-    pass
+def plot_locations(data, category_data, annotations):
+    # There are 552 different locations
+    locations = list(range(552))
+    count = [0 for i in range(552)]
+    for image in data:
+        count[image['location']] += 1
+    # plt.bar(locations_sort[-20:], counts_sorted[-20:])
+
+    # Plot general counts of images per location
+    plt.bar(locations, count)
+    plt.title('Number of Images Per Location')
+    plt.xlabel('Location ID')
+    plt.ylabel('Number of Images')
+    plt.show()
+
+    # Ascending order of locations with most images
+    locations_sort = np.argsort(count)
+    locs = locations_sort[-20:]
+    valid_images = {}
+    count_by_loc = {}
+    unique_categories = set([])
+
+    # Collect species count data on twenty most populated regions
+    for image in data:
+        if image['location'] in locs:
+            valid_images[image['id']] = image['location']
+            count_by_loc[image['location']] = {}
+    for item in annotations:
+        if item['image_id'] in valid_images:
+            cat = item['category_id']
+            if cat not in unique_categories:
+                unique_categories.add(cat)
+            if cat in count_by_loc[valid_images[item['image_id']]]:
+                count_by_loc[valid_images[item['image_id']]][cat] += 1
+            else:
+                count_by_loc[valid_images[item['image_id']]][cat] = 1
+
+    # For each category, get it's name
+    cat_names = {}
+    for item in category_data:
+        if item['id'] in unique_categories:
+            cat_names[item['id']] = item['name']
+
+    names = []
+    indices = list(range(20))
+    base = np.array([0 for _ in range(20)])
+    for j, item in enumerate(unique_categories):
+        # Get counts of this category for each location and plot
+        names.append(cat_names[item])
+        counts = [0 for _ in range(20)]
+        for i, loc in enumerate(locs):
+            if item in count_by_loc[loc]:
+                counts[i] = count_by_loc[loc][item]
+        if j == 0:
+            plt.bar(indices, counts)
+        else:
+            plt.bar(indices, counts, bottom=base)
+        base = base + np.array(counts)
+    plt.xticks(indices, list(map(lambda x: str(x), locs)), rotation=60)
+    plt.xlabel('Location ID')
+    plt.ylabel('Count Divided by Species')
+    plt.title('Species Breakdown of Locations with Most Images')
+    plt.legend(names, prop={'size': 6}, loc='upper left')
+    plt.show()
+    return
+
+
+
+
+
 
 def plot_time(data):
     pass
@@ -33,8 +101,8 @@ def plot_time(data):
 def main():
     with open('iwildcam2020_train_annotations.json') as f:
         data = json.load(f)
-    print(data['categories'])
-    plot_animals(data['categories'])
+    #plot_animals(data['categories'])
+    plot_locations(data['images'], data['categories'], data['annotations'])
 
 if __name__ == '__main__':
     main()
