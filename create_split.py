@@ -2,6 +2,7 @@
 # Further train set is then split into a test, val, and train
 import numpy as np
 import json
+from sklearn.model_selection import train_test_split
 
 def create_split(annotations, images):
     locs = np.random.permutation([0 for i in range(552)])
@@ -18,37 +19,47 @@ def create_split(annotations, images):
 
     for item in images:
         if item['location'] in train_locs:
-            train_images.append(item['id'])
+            # odd days get assigned to test set
+            if int(item['datetime'][8:10]) % 2 == 0:
+                train_images.append(item['id'])
+            else:
+                test_images.append(item['id'])
         elif item['location'] in val_locs:
             val_images.append(item['id'])
         else:
             test_images.append(item['id'])
 
     train_annotations = []
+    y_train = []
     val_annotations = []
+    y_val = []
     test_annotations = []
+    y_test = []
 
     for item in annotations:
         if item['image_id'] in train_images:
             train_annotations.append(item['id'])
+            y_train.append(item['category_id'])
         elif item['image_id'] in val_images:
             val_annotations.append(item['id'])
+            y_val.append(item['category_id'])
         else:
             test_annotations.append(item['id'])
+            y_test.append(item['category_id'])
 
-    # Now we need to randomly select 20% to move to validation and 10% to move
-    # to test
-    n = len(train_annotations)
-    train_annotations = np.random.permutation(train_annotations)
-    val_annotations = val_annotations.extend(train_annotations[:round(0.2*n)])
-    test_annotations = test_annotations.extend(train_annotations[round(0.2*n):round(0.3*n)])
-    train_annotations = train_annotations[round(0.3*n):]
-    return train_annotations, val_annotations, test_annotations
+    # Move 5% to validation
+    X_train, X_val, y_train, label_val = train_test_split(train_annotations, y_train, test_size = 0.05)
+    val_annotations.extend(X_val)
+    y_val.extend(label_val)
+    return train_annotations, val_annotations, test_annotations, y_train, y_val, y_test
 
 if __name__ == '__main__':
     with open('iwildcam2020_train_annotations.json') as f:
         data = json.load(f)
-    train, val, test = create_split(data['annotations'], data['images'])
-    np.save("train.npy", train)
-    np.save("validation.npy", val)
-    np.save("test.npy", test)
+    train, val, test, y_train, y_val, y_test = create_split(data['annotations'], data['images'])
+    np.savez("X_train.npz", train)
+    np.savez("X_val.npz", val)
+    np.savez("X_test.npz", test)
+    np.savez("y_train.npz", y_train)
+    np.savez("y_val.npz", y_val)
+    np.savez("y_test.npz", y_test)
