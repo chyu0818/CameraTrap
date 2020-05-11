@@ -87,11 +87,11 @@ class CameraTrapDataset(Dataset):
                 self.im_lst.append(self.transform(im_crop))
 
                 # Check if category is human. (also 75)
-                if category == '2' and category_id != 75:
+                if category == '2' and category_id != HUMAN_CATEGORY_ID and category_id != 0:
                     #print('random human', category_id)
                     self.target_lst.append(HUMAN_CATEGORY_ID)
-                # If animal
-                elif category == '1' or category_id == 75:
+                # If animal or actual human or empty
+                elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
                     self.target_lst.append(category_id)
                 else:
                     print('ERROR: Only categories 1/2:', category)
