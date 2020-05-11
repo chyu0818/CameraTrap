@@ -64,7 +64,7 @@ class CameraTrapDataset(Dataset):
                 empty_count += 1
                 continue
             elif category_id == 0 or len(detect) == 0:
-                print('ERROR: No bounding boxes with empty label.')
+                print('ERROR: Image:{} Category:{} Length bbox:{}'.format(file, category_id, len(detect)))
 
             # If there are detections in image.
             for d in detect:
