@@ -35,8 +35,8 @@ class CameraTrapDataset(Dataset):
         random.seed(seed)
 
         # Randomize files.
-        file_lst0 = np.load(file_lst_fn)
-        file_lst = file_lst0.iloc[np.random.permutation(len(file_lst0))]
+        file_lst = np.load(file_lst_fn)
+        np.random.shuffle(file_lst)
         print('Total number of files: ', len(file_lst))
 
         # Read in json files.
