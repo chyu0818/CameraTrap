@@ -13,14 +13,15 @@ def create_split(annotations, images):
 
     # Split locations into train/val/test 70/20/10
     n = len(locs)
-    train_locs = locs[:round(0.7*n)]
-    val_locs = locs[round(0.7*n):round(0.9*n)]
+    train_locs = locs[:round(0.8*n)]
+    val_locs = locs[round(0.8*n):round(0.9*n)]
     test_locs = locs[round(0.9*n):]
 
     # Get list of images for each set first and then we'll split annotations
     train_images = set([])
     val_images = set([])
     test_images = set([])
+    test_cis_images = set([])
 
     for item in images:
         if item['location'] in train_locs:
@@ -28,7 +29,7 @@ def create_split(annotations, images):
             if int(item['datetime'][8:10]) % 2 == 0:
                 train_images.add(item['id'])
             else:
-                test_images.add(item['id'])
+                test_cis_images.add(item['id'])
         elif item['location'] in val_locs:
             val_images.add(item['id'])
         else:
@@ -43,6 +44,9 @@ def create_split(annotations, images):
 
     print('Splitting Annotations..')
 
+    test_cis_count = 0
+    test_trans_count = 0
+
     for item in annotations:
         if item['image_id'] in train_images:
             train_annotations.append(item['id'])
@@ -51,12 +55,18 @@ def create_split(annotations, images):
             val_annotations.append(item['id'])
             y_val.append(item['category_id'])
         else:
+            if item['image_id'] in test_cis_images:
+                test_cis_count += 1
+            else:
+                test_trans_count += 1
             test_annotations.append(item['id'])
             y_test.append(item['category_id'])
 
-    print(len(train_annotations))
-    print(len(test_annotations))
-    print(len(val_annotations))
+    print("training", len(train_annotations) * 0.95)
+    print("trans_val", len(val_annotations))
+    print("cis_val", len(train_annotations) * 0.05)
+    print("trans_test", test_trans_count)
+    print("val_test", test_cis_count)
 
     # Move 5% to validation
     X_train, X_val, y_train, label_val = train_test_split(train_annotations, y_train, test_size = 0.05)
