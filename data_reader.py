@@ -51,7 +51,7 @@ class CameraTrapDataset(Dataset):
         empty_count = 0
         empty_w_bbox_count = 0
         nonempty_no_bbox_count = 0
-        for f in file_lst:
+        for f in file_lst[:100]:
             # Get detections and category id from dictionary.
             detect = im_dict[f]['detections']
             category_id = im_dict[f]['category_id']
@@ -67,10 +67,10 @@ class CameraTrapDataset(Dataset):
                 continue
             elif category_id == 0:
                 empty_w_bbox_count += 1
-                print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
+                #print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
             elif len(detect) == 0:
                 nonempty_no_bbox_count += 1
-                print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
+                #print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
 
             # If there are detections in image.
             for d in detect:
@@ -88,7 +88,7 @@ class CameraTrapDataset(Dataset):
 
                 # Check if category is human. (also 75)
                 if category == '2' and category_id != 75:
-                    print('random human', category_id)
+                    #print('random human', category_id)
                     self.target_lst.append(HUMAN_CATEGORY_ID)
                 # If animal
                 elif category == '1' or category_id == 75:
@@ -99,10 +99,10 @@ class CameraTrapDataset(Dataset):
         print('Number of empty images with no bounding boxes:', empty_count)
         print('Number of empty images with bounding boxes:', empty_w_bbox_count)
         print('Number of nonempty images without bounding boxes:', nonempty_no_bbox_count)
-        print('Final number of cropped images:', len(self.im_list))
-        assert(len(self.im_list) == len(self.target_lst))
-        assert(len(self.im_list) == len(self.id_lst))
-        assert(len(self.im_list) == len(self.conf))
+        print('Final number of cropped images:', len(self.im_lst))
+        assert(len(self.im_lst) == len(self.target_lst))
+        assert(len(self.im_lst) == len(self.id_lst))
+        assert(len(self.im_lst) == len(self.conf))
 
 
     def create_im_dict(self, annotations, detections):
