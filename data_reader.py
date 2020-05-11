@@ -35,7 +35,7 @@ class CameraTrapDataset(Dataset):
         random.seed(seed)
 
         # Randomize files.
-        file_lst = np.load(file_lst_fn)
+        file_lst = np.load(file_lst_fn)['arr_0']
         np.random.shuffle(file_lst)
         print('Total number of files: ', len(file_lst))
 
