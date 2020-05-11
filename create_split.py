@@ -49,17 +49,17 @@ def create_split(annotations, images):
 
     for item in annotations:
         if item['image_id'] in train_images:
-            train_annotations.append(item['id'])
+            train_annotations.append(item['image_id'])
             y_train.append(item['category_id'])
         elif item['image_id'] in val_images:
-            val_annotations.append(item['id'])
+            val_annotations.append(item['image_id'])
             y_val.append(item['category_id'])
         else:
             if item['image_id'] in test_cis_images:
                 test_cis_count += 1
             else:
                 test_trans_count += 1
-            test_annotations.append(item['id'])
+            test_annotations.append(item['image_id'])
             y_test.append(item['category_id'])
 
     print("training", len(train_annotations) * 0.95)
