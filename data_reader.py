@@ -60,10 +60,10 @@ class CameraTrapDataset(Dataset):
             (n_rows, n_cols, n_channels) = np.shape(im)
 
             # Ignore image if empty
-            if category_id == 0 and len(bbox) == 0:
+            if category_id == 0 and len(detect) == 0:
                 empty_count += 1
                 continue
-            elif category_id == 0 or len(bbox) == 0:
+            elif category_id == 0 or len(detect) == 0:
                 print('ERROR: No bounding boxes with empty label.')
 
             # If there are detections in image.
