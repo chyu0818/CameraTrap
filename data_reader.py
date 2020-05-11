@@ -49,22 +49,28 @@ class CameraTrapDataset(Dataset):
         im_dict = self.create_im_dict(annotations, detections)
 
         empty_count = 0
-        for file in file_lst:
+        empty_w_bbox_count = 0
+        nonempty_no_bbox_count = 0
+        for f in file_lst:
             # Get detections and category id from dictionary.
-            detect = im_dict[file]['detections']
-            category_id = im_dict[file]['category_id']
+            detect = im_dict[f]['detections']
+            category_id = im_dict[f]['category_id']
             assert(type(category_id) is int)
 
             # Read in image.
-            im = Image.open(os.path.join(im_fp,'{}.jpg'.format(file)))
+            im = Image.open(os.path.join(im_fp,'{}.jpg'.format(f)))
             (n_rows, n_cols, n_channels) = np.shape(im)
 
-            # Ignore image if empty
+            # Ignore image if no bounding boxes
             if category_id == 0 and len(detect) == 0:
                 empty_count += 1
                 continue
-            elif category_id == 0 or len(detect) == 0:
-                print('ERROR: Image:{} Category:{} Length bbox:{}'.format(file, category_id, len(detect)))
+            elif category_id == 0:
+                empty_w_bbox_count += 1
+                print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
+            elif len(detect) == 0:
+                nonempty_no_bbox_count += 1
+                print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
 
             # If there are detections in image.
             for d in detect:
@@ -73,7 +79,7 @@ class CameraTrapDataset(Dataset):
                 bbox = (int(x*n_cols), int(y*n_rows), int((x+width)*n_cols), int(n_rows*(y+height)))
                 conf = d['conf']
 
-                self.id_lst.append(file)
+                self.id_lst.append(f)
                 self.conf.append(conf)
 
                 # Crop image with PIL.
@@ -90,7 +96,13 @@ class CameraTrapDataset(Dataset):
                 else:
                     print('ERROR: Only categories 1/2:', category)
 
-        print('Number of empty images: ', empty_count)
+        print('Number of empty images with no bounding boxes:', empty_count)
+        print('Number of empty images with bounding boxes:', empty_w_bbox_count)
+        print('Number of nonempty images without bounding boxes:', nonempty_no_bbox_count)
+        print('Final number of cropped images:', len(self.im_list))
+        assert(len(self.im_list) == len(self.target_lst))
+        assert(len(self.im_list) == len(self.id_lst))
+        assert(len(self.im_list) == len(self.conf))
 
 
     def create_im_dict(self, annotations, detections):
