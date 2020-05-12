@@ -41,7 +41,7 @@ def train(model, device, train_loader, optimizer, epoch):
 
 
 def test(model, device, test_loader):
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(reduction='sum')
     model.eval()    # Set the model to inference mode
     test_loss = 0
     correct = 0
@@ -52,7 +52,7 @@ def test(model, device, test_loader):
             target = data0['target']
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += criterion(output, target, reduction='sum').item()  # sum up batch loss
+            test_loss += criterion(output, target).item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
             total += len(target)
