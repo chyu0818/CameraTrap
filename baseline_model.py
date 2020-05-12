@@ -10,6 +10,11 @@ from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
 import numpy as np
 
+BATCH_SIZE_TRAIN = 1000
+BATCH_SIZE_VAL = 1000
+LOG_INTERVAL = BATCH_SIZE_TRAIN // 10
+NUM_CLASSES = 572 # 267??
+NUM_EPOCHS = 20
 def train(model, device, train_loader, optimizer, epoch):
     '''
     This is your training function. When you call this function, the model is
@@ -17,7 +22,6 @@ def train(model, device, train_loader, optimizer, epoch):
     '''
     model.train()# Set the model to training mode
     losses = []
-    log_interval = 100
     for batch_idx, data0 in enumerate(train_loader):
         data = data0['image']
         target = data0['target']
@@ -28,10 +32,10 @@ def train(model, device, train_loader, optimizer, epoch):
         loss.backward()                     # Gradient computation
         optimizer.step()                    # Perform a single optimization step
         losses.append(loss.item())
-        if batch_idx % log_interval == 0:
+        if batch_idx % LOG_INTERVAL == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.sampler),
-                100. * batch_idx / len(train_loader.sampler), losses[-1]))
+                epoch, batch_idx * len(data), len(train_dataset),
+                100. * batch_idx / len(train_dataset), losses[-1]))
     return np.mean(losses)
 
 
@@ -80,23 +84,18 @@ val_path = 'X_val.npz'
 img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-
-with open(ann_path) as f:
-    ann = json.load(f)
-
-with open(bbox_path) as f:
-    bbox = json.load(f)
-
+percent_data = 0.001
+# ~70k train, ~20k val
 train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
-                                  transform=transform)
+                                  percent_data, transform=transform)
 val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
-                                  transform=transform)
+                                  percent_data, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=1, shuffle=True
+        train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True
 )
 val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=1, shuffle=True
+        val_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True
 )
 
 lr = 1
@@ -109,8 +108,7 @@ scheduler = StepLR(optimizer, step_size=step, gamma=gamma)
 # Training loop
 train_losses = []
 test_losses = []
-epochs = 1
-for epoch in range(1, epochs + 1):
+for epoch in range(1, NUM_EPOCHS + 1):
     train_loss = train(model, device, train_loader, optimizer, epoch)
     test_loss = test(model, device, val_loader)
     train_losses.append(train_loss)
@@ -126,4 +124,4 @@ print("Validation Set:")
 test(model, device, val_loader)
 print("Training Set:")
 test(model, device, train_loader)
-torch.save(model.state_dict(), "baseline.pt")
+torch.save(model.state_dict(), "baseline{}.pt".format(percent_data))

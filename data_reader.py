@@ -20,7 +20,7 @@ from PIL import Image
 # print(hi.files)
 HUMAN_CATEGORY_ID = 75
 class CameraTrapDataset(Dataset):
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, seed=1, transform=None):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images
@@ -37,6 +37,7 @@ class CameraTrapDataset(Dataset):
         # Randomize files.
         file_lst = np.load(file_lst_fn)['arr_0']
         np.random.shuffle(file_lst)
+        file_lst = file_lst[:int(percent_data * len(file_lst))]
         print('Total number of files: ', len(file_lst))
 
         # Read in json files.
