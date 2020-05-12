@@ -10,13 +10,14 @@ from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
 import numpy as np
 
-def train(args, model, device, train_loader, optimizer, epoch):
+def train(model, device, train_loader, optimizer, epoch):
     '''
     This is your training function. When you call this function, the model is
     trained for 1 epoch.
     '''
     model.train()# Set the model to training mode
     losses = []
+    log_interval = 100
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()               # Clear the gradient
@@ -25,7 +26,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
         loss.backward()                     # Gradient computation
         optimizer.step()                    # Perform a single optimization step
         losses.append(loss.item())
-        if batch_idx % args.log_interval == 0:
+        if batch_idx % log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.sampler),
                 100. * batch_idx / len(train_loader.sampler), losses[-1]))
@@ -106,7 +107,7 @@ train_losses = []
 test_losses = []
 epochs = 1
 for epoch in range(1, epochs + 1):
-    train_loss = train(args, model, device, train_loader, optimizer, epoch)
+    train_loss = train(model, device, train_loader, optimizer, epoch)
     test_loss = test(model, device, val_loader)
     train_losses.append(train_loss)
     test_losses.append(test_loss)
