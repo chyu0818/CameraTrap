@@ -88,10 +88,10 @@ val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
                                   transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=1000, shuffle=True
+    train_dataset[0], batch_size=1, shuffle=True
 )
 val_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=1000, shuffle=True
+    train_dataset[0], batch_size=1, shuffle=True
 )
 
 lr = 1
@@ -104,7 +104,7 @@ scheduler = StepLR(optimizer, step_size=step, gamma=gamma)
 # Training loop
 train_losses = []
 test_losses = []
-epochs = 20
+epochs = 1
 for epoch in range(1, epochs + 1):
     train_loss = train(args, model, device, train_loader, optimizer, epoch)
     test_loss = test(model, device, val_loader)
