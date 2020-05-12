@@ -62,7 +62,7 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-use_cuda = True
+use_cuda = False
 device = torch.device("cuda" if use_cuda else "cpu")
 model = models.resnet18(pretrained=True)
 
