@@ -20,6 +20,7 @@ def train(model, device, train_loader, optimizer, epoch):
     This is your training function. When you call this function, the model is
     trained for 1 epoch.
     '''
+    criterion = nn.CrossEntropyLoss()
     model.train()# Set the model to training mode
     losses = []
     for batch_idx, data0 in enumerate(train_loader):
@@ -28,7 +29,7 @@ def train(model, device, train_loader, optimizer, epoch):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()               # Clear the gradient
         output = model(data)                # Make predictions
-        loss = nn.CrossEntropyLoss(output, target)   # Compute loss
+        loss = criterion(output, target)   # Compute loss
         loss.backward()                     # Gradient computation
         optimizer.step()                    # Perform a single optimization step
         losses.append(loss.item())
@@ -40,6 +41,7 @@ def train(model, device, train_loader, optimizer, epoch):
 
 
 def test(model, device, test_loader):
+    criterion = nn.CrossEntropyLoss()
     model.eval()    # Set the model to inference mode
     test_loss = 0
     correct = 0
@@ -50,7 +52,7 @@ def test(model, device, test_loader):
             target = data0['target']
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += nn.CrossEntropyLoss(output, target, reduction='sum').item()  # sum up batch loss
+            test_loss += criterion(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
             total += len(target)
