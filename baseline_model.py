@@ -18,7 +18,9 @@ def train(model, device, train_loader, optimizer, epoch):
     model.train()# Set the model to training mode
     losses = []
     log_interval = 100
-    for batch_idx, (data, target) in enumerate(train_loader):
+    for batch_idx, data0 in enumerate(train_loader):
+        data = data0['image']
+        target = data0['target']
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()               # Clear the gradient
         output = model(data)                # Make predictions
@@ -39,7 +41,9 @@ def test(model, device, test_loader):
     correct = 0
     total = 0
     with torch.no_grad():   # For the inference step, gradient is not computed
-        for data, target in test_loader:
+        for data0 in test_loader:
+            data = data0['image']
+            target = data0['target']
             data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
