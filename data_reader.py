@@ -45,8 +45,9 @@ class CameraTrapDataset(Dataset):
             annotations0 = json.load(f)
         annotations = annotations0['annotations']
         all_categories = annotations0['categories']
-        categories_dict = {all_categories[i]:i for i in range(len(all_categories))}
+        categories_dict = {all_categories[i]['id']:i for i in range(len(all_categories))}
         print(categories_dict)
+        print('Number of classes:', len(categories_dict))
         with open(bbox_fn) as f1:
             detections = json.load(f1)['images']
 
