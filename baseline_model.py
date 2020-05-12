@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchvision import transforms as T
-from data_reader1 import CameraTrapDataset
+from data_reader import CameraTrapDataset
 import json
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -58,7 +58,7 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-use_cuda = False
+use_cuda = True
 device = torch.device("cuda" if use_cuda else "cpu")
 model = models.resnet18(pretrained=True)
 
@@ -66,7 +66,7 @@ model = models.resnet18(pretrained=True)
 for param in model.parameters():
     param.requires_grad = False
 
-model.fc = torch.nn.Linear(2048, 572)
+model.fc = torch.nn.Linear(512, 572)
 model.to(device)
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
@@ -93,10 +93,10 @@ val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
                                   transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
-        train_dataset[:1], batch_size=1, shuffle=True
+        train_dataset, batch_size=1, shuffle=True
 )
 val_loader = torch.utils.data.DataLoader(
-        train_dataset[:1], batch_size=1, shuffle=True
+        val_dataset, batch_size=1, shuffle=True
 )
 
 lr = 1
