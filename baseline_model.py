@@ -28,7 +28,7 @@ def train(model, device, train_loader, optimizer, epoch):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()               # Clear the gradient
         output = model(data)                # Make predictions
-        loss = F.nll_loss(output, target)   # Compute loss
+        loss = nn.CrossEntropyLoss(output, target)   # Compute loss
         loss.backward()                     # Gradient computation
         optimizer.step()                    # Perform a single optimization step
         losses.append(loss.item())
@@ -50,7 +50,7 @@ def test(model, device, test_loader):
             target = data0['target']
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            test_loss += nn.CrossEntropyLoss(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
             total += len(target)
@@ -62,7 +62,7 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-use_cuda = True
+use_cuda = False
 device = torch.device("cuda" if use_cuda else "cpu")
 model = models.resnet18(pretrained=True)
 
