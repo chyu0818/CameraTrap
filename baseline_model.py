@@ -71,7 +71,7 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
 transform = T.compose([T.Resize((256,256)), normalize, T.ToTensor()])
 
 train_path = 'X_train.npz'
-val_path = ''
+val_path = 'X_val.npz'
 img_path = '../efs/train'
 ann_path = 'iwildcam2020_train_annotations.json'
 bbox_path = 'iwildcam2020_megadetector_results.json'
