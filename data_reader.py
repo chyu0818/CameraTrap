@@ -42,7 +42,11 @@ class CameraTrapDataset(Dataset):
 
         # Read in json files.
         with open(annotations_fn) as f:
-            annotations = json.load(f)['annotations']
+            annotations0 = json.load(f)
+        annotations = annotations0['annotations']
+        all_categories = annotations0['categories']
+        categories_dict = {all_categories[i]:i for i in range(len(all_categories))}
+        print(categories_dict)
         with open(bbox_fn) as f1:
             detections = json.load(f1)['images']
 
@@ -90,10 +94,10 @@ class CameraTrapDataset(Dataset):
                 # Check if category is human. (also 75)
                 if category == '2' and category_id != HUMAN_CATEGORY_ID and category_id != 0:
                     #print('random human', category_id)
-                    self.target_lst.append(HUMAN_CATEGORY_ID)
+                    self.target_lst.append(categories_dict[HUMAN_CATEGORY_ID])
                 # If animal or actual human or empty
                 elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
-                    self.target_lst.append(category_id)
+                    self.target_lst.append(categories_dict[category_id])
                 else:
                     print('ERROR: Only categories 1/2:', category)
 
