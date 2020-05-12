@@ -68,11 +68,13 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.compose([T.Resize(256), normalize, T.ToTensor()])
+transform = T.compose([T.Resize((256,256)), normalize, T.ToTensor()])
 
-train_path = ''
+train_path = 'X_train.npz'
 val_path = ''
-img_path = ''
+img_path = '../efs/train'
+ann_path = 'iwildcam2020_train_annotations.json'
+bbox_path = 'iwildcam2020_megadetector_results.json'
 
 with open('iwildcam2020_train_annotations.json') as f:
     ann = json.load(f)
@@ -80,8 +82,17 @@ with open('iwildcam2020_train_annotations.json') as f:
 with open('iwildcam2020_megadetector_results.json') as f:
     bbox = json.load(f)
 
-train_loader = CameraTrapDataset(img_path, train_path, ann, bbox, transform)
-val_loader = CameraTrapDataset(img_path, val_path, ann, bbox, transform)
+train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
+                                  transform=transform)
+val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
+                                  transform=transform)
+
+train_loader = torch.utils.data.DataLoader(
+    train_dataset, batch_size=1000, shuffle=True
+)
+val_loader = torch.utils.data.DataLoader(
+    train_dataset, batch_size=1000, shuffle=True
+)
 
 lr = 1
 optimizer = optim.Adadelta(model.parameters(), lr=lr)
