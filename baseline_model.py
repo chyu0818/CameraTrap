@@ -13,7 +13,7 @@ import numpy as np
 BATCH_SIZE_TRAIN = 1000
 BATCH_SIZE_VAL = 1000
 LOG_INTERVAL = BATCH_SIZE_TRAIN // 10
-NUM_CLASSES = 572 # 267??
+NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
 def train(model, device, train_loader, optimizer, epoch):
     '''
@@ -70,7 +70,7 @@ model = models.resnet18(pretrained=True)
 for param in model.parameters():
     param.requires_grad = False
 
-model.fc = torch.nn.Linear(512, 572)
+model.fc = torch.nn.Linear(512, NUM_CLASSES)
 model.to(device)
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
