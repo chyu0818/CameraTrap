@@ -51,7 +51,7 @@ class CameraTrapDataset(Dataset):
         empty_count = 0
         empty_w_bbox_count = 0
         nonempty_no_bbox_count = 0
-        for f in file_lst[:100]:
+        for f in file_lst:
             # Get detections and category id from dictionary.
             detect = im_dict[f]['detections']
             category_id = im_dict[f]['category_id']

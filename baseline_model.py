@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchvision import transforms as T
-from data_reader import CameraTrapDataset
+from data_reader1 import CameraTrapDataset
 import json
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -53,7 +53,7 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-use_cuda = True
+use_cuda = False
 device = torch.device("cuda" if use_cuda else "cpu")
 model = models.resnet18(pretrained=True)
 
@@ -64,22 +64,22 @@ for param in model.parameters():
 model.fc = torch.nn.Linear(2048, 572)
 model.to(device)
 
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.compose([T.Resize((256,256)), normalize, T.ToTensor()])
+transform = T.Compose([T.Resize((256,256)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
 img_path = '../efs/train'
-ann_path = 'iwildcam2020_train_annotations.json'
-bbox_path = 'iwildcam2020_megadetector_results.json'
+ann_path = '../efs/iwildcam2020_train_annotations.json'
+bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 
-with open('iwildcam2020_train_annotations.json') as f:
+with open(ann_path) as f:
     ann = json.load(f)
 
-with open('iwildcam2020_megadetector_results.json') as f:
+with open(bbox_path) as f:
     bbox = json.load(f)
 
 train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
@@ -88,10 +88,10 @@ val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
                                   transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
-    train_dataset[0], batch_size=1, shuffle=True
+        train_dataset[:1], batch_size=1, shuffle=True
 )
 val_loader = torch.utils.data.DataLoader(
-    train_dataset[0], batch_size=1, shuffle=True
+        train_dataset[:1], batch_size=1, shuffle=True
 )
 
 lr = 1
