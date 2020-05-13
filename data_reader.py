@@ -34,7 +34,6 @@ class CameraTrapDataset(Dataset):
         annotations = annotations0['annotations']
         all_categories = annotations0['categories']
         categories_dict = {all_categories[i]['id']:i for i in range(len(all_categories))}
-        print(categories_dict)
         print('Number of classes:', len(categories_dict))
         with open(bbox_fn) as f1:
             detections = json.load(f1)['images']
@@ -109,7 +108,7 @@ class CameraTrapDataset(Dataset):
                 else:
                     print('ERROR: Only categories 1/2:', category)
 
-        print('Number of empty images with no bounding boxes:', empty_count)
+        print('\nNumber of empty images with no bounding boxes:', empty_count)
         print('Number of empty images with bounding boxes:', empty_w_bbox_count)
         print('Number of nonempty images without bounding boxes:', nonempty_no_bbox_count)
 
@@ -117,7 +116,7 @@ class CameraTrapDataset(Dataset):
         print('Number of images without categories:', no_category_id_count)
         print('Number of categories that do not exist:', nonexistent_category_count)
 
-        print('\nFinal number of cropped images:', len(self.im_lst))
+        print('\nFinal number of cropped images:', len(self.im_lst), '\n')
         assert(len(self.im_lst) == len(self.target_lst))
         assert(len(self.im_lst) == len(self.id_lst))
         assert(len(self.im_lst) == len(self.conf))

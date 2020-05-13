@@ -89,8 +89,11 @@ ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 percent_data = 0.001
 # ~70k train, ~20k val
+
+print('Train')
 train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
+print('\nVal')
 val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 
@@ -123,7 +126,7 @@ print('Train Time:', time.time()-start)
 np.save("train_loss{}.npy".format(percent_data), np.array(train_losses))
 np.save("test_loss{}.npy".format(percent_data), np.array(test_losses))
 
-print("Final Performance!")
+print("\nFinal Performance!")
 print("Validation Set:")
 test(model, device, val_loader)
 print("Training Set:")
