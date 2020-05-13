@@ -5,19 +5,7 @@ import numpy as np
 import torch
 import json
 from PIL import Image
-# 1 animal 2 person for bbox human id 75
-# data augment During training, images were randomly cropped and perturbed in brightness, saturation, hue,and contrast
-# with open('iwildcam2020_train_annotations.json') as f:
-#     data = json.load(f)
-# print(len(data['annotations']))
-# print(len(data['images']))
-# print(data['annotations'][1000])
-#
-# with open('iwildcam2020_megadetector_results.json') as f:
-#     data = json.load(f)
-# print(len(data['images']))
-# hi = np.load('X_train.npz')
-# print(hi.files)
+
 HUMAN_CATEGORY_ID = 75
 class CameraTrapDataset(Dataset):
     def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):
@@ -136,8 +124,6 @@ class CameraTrapDataset(Dataset):
 
 
     def create_im_dict(self, annotations, detections):
-        # Count?
-        # 216 species but 276 in paper 571 max
         # Create dictionary with the key as image id and the values as
         # the bounding boxes and category id.
         # detections is a list of dictionaries {category 1/2, bbox, confidence}
