@@ -9,6 +9,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
 import numpy as np
+import time
 
 BATCH_SIZE_TRAIN = 1000
 BATCH_SIZE_VAL = 1000
@@ -110,13 +111,14 @@ scheduler = StepLR(optimizer, step_size=step, gamma=gamma)
 # Training loop
 train_losses = []
 test_losses = []
+start = time.time()
 for epoch in range(1, NUM_EPOCHS + 1):
     train_loss = train(model, device, train_loader, optimizer, epoch)
     test_loss = test(model, device, val_loader)
     train_losses.append(train_loss)
     test_losses.append(test_loss)
     scheduler.step()    # learning rate scheduler
-
+print('Train Time:', time.time()-start)
 # You may optionally save your model at each epoch here
 np.save("train_loss.npy", np.array(train_losses))
 np.save("test_loss.npy", np.array(test_losses))
