@@ -65,8 +65,10 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-use_cuda = True
-device = torch.device("cuda" if use_cuda else "cpu")
+#use_cuda = True
+#device = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+kwargs = {'num_workers': 1, 'pin_memory': True} if device=='cuda' else {}
 model = models.resnet18(pretrained=True)
 
 # Fix everything but final layer
@@ -87,7 +89,7 @@ val_path = 'X_val.npz'
 img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = 1
+percent_data = 0.01
 # ~70k train, ~20k val
 
 print('Train Data')
@@ -98,10 +100,10 @@ val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True
+        train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True, **kwargs
 )
 val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True
+        val_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
 )
 
 lr = 1

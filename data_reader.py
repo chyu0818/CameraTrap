@@ -7,6 +7,10 @@ import json
 from PIL import Image
 
 HUMAN_CATEGORY_ID = 75
+
+#If available use GPU memory to load data 
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda:0" if use_cuda else "cpu")
 class CameraTrapDataset(Dataset):
     def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):
         '''
