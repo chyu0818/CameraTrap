@@ -13,7 +13,7 @@ import time
 
 BATCH_SIZE_TRAIN = 1000
 BATCH_SIZE_VAL = 1000
-LOG_INTERVAL = BATCH_SIZE_TRAIN // 10
+LOG_INTERVAL = 10
 NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
 def train(model, device, train_loader, optimizer, epoch):
@@ -80,20 +80,20 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((256,256)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
 img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = 0.001
+percent_data = 1
 # ~70k train, ~20k val
 
-print('Train')
+print('Train Data')
 train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
-print('\nVal')
+print('\nVal Data')
 val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 

@@ -20,7 +20,7 @@ class CameraTrapDataset(Dataset):
         self.id_lst = []   # List of image ids corresponding to each bounding box.
         self.conf = []   # List of confidence values.
         self.transform = transform
-        random.seed(seed)
+        np.random.seed(seed)
 
         # Randomize files.
         file_lst = np.load(file_lst_fn)['arr_0']
