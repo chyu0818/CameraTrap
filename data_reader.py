@@ -57,15 +57,21 @@ class CameraTrapDataset(Dataset):
         empty_count = 0
         empty_w_bbox_count = 0
         nonempty_no_bbox_count = 0
+
+        no_detections_count = 0
+        no_category_id_count = 0
+        nonexistent_category_count = 0
         for f in file_lst:
             # Get detections and category id from dictionary.
+            if im_dict[f].get('detections') == None:
+                no_detections_count += 1
+                continue
             detect = im_dict[f]['detections']
+            if im_dict[f].get('category_id') == None:
+                im_dict[f]['category_id'] = 0
+                no_category_id_count += 1
             category_id = im_dict[f]['category_id']
             assert(type(category_id) is int)
-
-            # Read in image.
-            im = Image.open(os.path.join(im_fp,'{}.jpg'.format(f)))
-            (n_rows, n_cols, n_channels) = np.shape(im)
 
             # Ignore image if no bounding boxes
             if category_id == 0 and len(detect) == 0:
@@ -77,6 +83,11 @@ class CameraTrapDataset(Dataset):
             elif len(detect) == 0:
                 nonempty_no_bbox_count += 1
                 #print('ERROR: Image:{} Category:{} Length bbox:{}'.format(f, category_id, len(detect)))
+                continue
+
+            # Read in image.
+            im = Image.open(os.path.join(im_fp,'{}.jpg'.format(f)))
+            (n_rows, n_cols, n_channels) = np.shape(im)
 
             # If there are detections in image.
             for d in detect:
@@ -85,27 +96,40 @@ class CameraTrapDataset(Dataset):
                 bbox = (int(x*n_cols), int(y*n_rows), int((x+width)*n_cols), int(n_rows*(y+height)))
                 conf = d['conf']
 
-                self.id_lst.append(f)
-                self.conf.append(conf)
-
-                # Crop image with PIL.
-                im_crop = im.crop(bbox)
-                self.im_lst.append(self.transform(im_crop))
 
                 # Check if category is human. (also 75)
                 if category == '2' and category_id != HUMAN_CATEGORY_ID and category_id != 0:
                     #print('random human', category_id)
                     self.target_lst.append(categories_dict[HUMAN_CATEGORY_ID])
+
+                    # Crop image with PIL.
+                    im_crop = im.crop(bbox)
+                    self.im_lst.append(self.transform(im_crop))
+                    self.id_lst.append(f)
+                    self.conf.append(conf)
                 # If animal or actual human or empty
                 elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
-                    self.target_lst.append(categories_dict[category_id])
+                    if categories_dict.get(category_id) != None:
+                        self.target_lst.append(categories_dict[category_id])
+                        # Crop image with PIL.
+                        im_crop = im.crop(bbox)
+                        self.im_lst.append(self.transform(im_crop))
+                        self.id_lst.append(f)
+                        self.conf.append(conf)
+                    else:
+                        nonexistent_category_count += 1
                 else:
                     print('ERROR: Only categories 1/2:', category)
 
         print('Number of empty images with no bounding boxes:', empty_count)
         print('Number of empty images with bounding boxes:', empty_w_bbox_count)
         print('Number of nonempty images without bounding boxes:', nonempty_no_bbox_count)
-        print('Final number of cropped images:', len(self.im_lst))
+
+        print('\nNumber of images without detections (even []) listed:', no_detections_count)
+        print('Number of images without categories:', no_category_id_count)
+        print('Number of categories that do not exist:', nonexistent_category_count)
+
+        print('\nFinal number of cropped images:', len(self.im_lst))
         assert(len(self.im_lst) == len(self.target_lst))
         assert(len(self.im_lst) == len(self.id_lst))
         assert(len(self.im_lst) == len(self.conf))

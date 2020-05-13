@@ -118,8 +118,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
     scheduler.step()    # learning rate scheduler
 
 # You may optionally save your model at each epoch here
-np.save("train_loss.npy", np.array(train_losses))
-np.save("test_loss.npy", np.array(test_losses))
+np.save("train_loss{}.npy".format(percent_data), np.array(train_losses))
+np.save("test_loss{}.npy".format(percent_data), np.array(test_losses))
 
 print("Final Performance!")
 print("Validation Set:")
