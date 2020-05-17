@@ -32,6 +32,10 @@ def main():
                     d = im_info['detections'][i]
                     [x, y, width, height] = d['bbox']
                     bbox = (int(x*n_cols), int(y*n_rows), int((x+width)*n_cols), int(n_rows*(y+height)))
+                    if bbox[0] == bbox[2]:
+                        bbox = (bbox[0], bbox[1], bbox[2]+1, bbox[3])
+                    if bbox[1] == bbox[3]:
+                        bbox = (bbox[0], bbox[1], bbox[2], bbox[3]+1)
                     # Crop image with PIL and resize so that smallest side is 256.
                     im_crop = transform(im.crop(bbox))
                     im_crop_fn = '{}_{}_{}.jpg'.format(id, i, '-'.join([str(dd) for dd in d['bbox']]))
@@ -45,6 +49,10 @@ def main():
                     d = im_info['detections'][i]
                     [x, y, width, height] = d['bbox']
                     bbox = (int(x*n_cols), int(y*n_rows), int((x+width)*n_cols), int(n_rows*(y+height)))
+                    if bbox[0] == bbox[2]:
+                        bbox = (bbox[0], bbox[1], bbox[2]+1, bbox[3])
+                    if bbox[1] == bbox[3]:
+                        bbox = (bbox[0], bbox[1], bbox[2], bbox[3]+1)
                     # Crop image with PIL and resize so that smallest side is 256.
                     im_crop = transform(im.crop(bbox))
                     im_crop_fn = '{}_{}_{}.jpg'.format(id, i, '-'.join([str(dd) for dd in d['bbox']]))
