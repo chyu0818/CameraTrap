@@ -26,7 +26,7 @@ def main():
         if len(im_info['detections']) > 0:
             # Read in image.
             try:
-                im = Image.open(os.path.join(im_fp,'{}.jpg'.format(f)))
+                im = Image.open(os.path.join(im_fp,'{}.jpg'.format(id)))
                 (n_rows, n_cols, n_channels) = np.shape(im)
                 for i in range(len(im_info['detections'])):
                     d = im_info['detections'][i]
@@ -39,7 +39,7 @@ def main():
                     counter_crop += 1
                 counter += 1
             except IOError:
-                im = Image.open(os.path.join(im_fp_test,'{}.jpg'.format(f)))
+                im = Image.open(os.path.join(im_fp_test,'{}.jpg'.format(id)))
                 (n_rows, n_cols, n_channels) = np.shape(im)
                 for i in range(len(im_info['detections'])):
                     d = im_info['detections'][i]
