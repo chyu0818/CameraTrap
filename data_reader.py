@@ -8,7 +8,7 @@ from PIL import Image
 
 HUMAN_CATEGORY_ID = 75
 
-#If available use GPU memory to load data 
+#If available use GPU memory to load data
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
 class CameraTrapDataset(Dataset):
@@ -96,7 +96,8 @@ class CameraTrapDataset(Dataset):
                     # Crop image with PIL.
                     im_crop = im.crop(bbox)
                     self.im_lst.append(self.transform(im_crop))
-                    self.id_lst.append(f)
+                    # ID: filename and bounding box coordinates
+                    self.id_lst.append(f + '_' + '-'.join([str(dd) for dd in d['bbox']]))
                     self.conf.append(conf)
                 # If animal or actual human or empty
                 elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
@@ -105,7 +106,7 @@ class CameraTrapDataset(Dataset):
                         # Crop image with PIL.
                         im_crop = im.crop(bbox)
                         self.im_lst.append(self.transform(im_crop))
-                        self.id_lst.append(f)
+                        self.id_lst.append(f + '_' + '-'.join([str(dd) for dd in d['bbox']]))
                         self.conf.append(conf)
                     else:
                         nonexistent_category_count += 1
