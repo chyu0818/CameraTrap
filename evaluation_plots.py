@@ -82,12 +82,22 @@ model.load_state_dict(torch.load(model_path))
 train_err, train_total = test(model, device, train_loader)
 val_err, val_total = test(model, device, val_loader)
 
-num_classes = np.log(train_total)
-log_train_err = np.log(np.divide(train_err, train_total))
-log_val_err = np.log(np.divide(val_err, val_total))
+log_train_err = []
+log_train_counts = []
+for i in range(len(train_total)):
+    if train_total[i] != 0:
+        log_train_err.append(np.log(train_err[i] / train_total[i]))
+        log_train_counts.append(np.log(train_total[i]))
 
-plt.scatter(num_classes, log_train_err, marker="o")
-plt.scatter(num_classes, log_val_err, marker="v")
+log_val_err = []
+log_val_counts = []
+for i in range(len(train_total)):
+    if train_total[i] != 0 and val_total[i] != 0:
+        log_val_err.append(np.log(val_err[i] / val_total[i]))
+        log_train_counts.append(np.log(val_total[i]))
+
+plt.scatter(log_train_counts, log_train_err, marker="o")
+plt.scatter(log_val_counts, log_val_err, marker="v")
 plt.xlabel("Log Scale Number of Training Examples For the Class")
 plt.ylabel("Log Scale Error Rate")
 plt.legend(["Train", "Validation"])
