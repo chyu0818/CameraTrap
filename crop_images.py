@@ -8,8 +8,8 @@ def main():
     bbox_fn = '../efs/iwildcam2020_megadetector_results.json'
     im_fp = '../efs/train'
     im_fp_test = '../efs/test'
-    im_crop_fp = '../efs/train/crop'
-    im_crop_fp_test = '../efs/test/crop'
+    im_crop_fp = '../efs/train_crop'
+    im_crop_fp_test = '../efs/test_crop'
     transform = T.Resize(256)
 
     # Read in json file.
