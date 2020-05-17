@@ -27,6 +27,7 @@ def main():
             # Read in image.
             try:
                 im = Image.open(os.path.join(im_fp,'{}.jpg'.format(f)))
+                (n_rows, n_cols, n_channels) = np.shape(im)
                 for i in range(len(im_info['detections'])):
                     d = im_info['detections'][i]
                     [x, y, width, height] = d['bbox']
@@ -39,6 +40,7 @@ def main():
                 counter += 1
             except IOError:
                 im = Image.open(os.path.join(im_fp_test,'{}.jpg'.format(f)))
+                (n_rows, n_cols, n_channels) = np.shape(im)
                 for i in range(len(im_info['detections'])):
                     d = im_info['detections'][i]
                     [x, y, width, height] = d['bbox']
