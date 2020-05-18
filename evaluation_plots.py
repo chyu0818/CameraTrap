@@ -31,7 +31,8 @@ def test(model, device, test_loader):
             output = model(data)
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             for i in range(len(pred)):
-                if pred[i] != target[i]:
+                print(pred[i], pred[i,0])
+                if pred[i,0] != target[i]:
                     error[target[i]] += 1
                 total[target[i]] += 1
     return error, total
@@ -48,7 +49,7 @@ def plot_mistakes(model, device, test_loader, save_fn):
             data = data0['image']
             target = data0['target']
             idd = data0['id']
-            data, target = data.to(device), target.to(device)
+            data, target, idd = data.to(device), target.to(device), idd.to(device)
             output = model(data)
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             print('pred', pred.shape)
