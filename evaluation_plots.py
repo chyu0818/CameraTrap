@@ -36,6 +36,50 @@ def test(model, device, test_loader):
                 total[target[i]] += 1
     return error, total
 
+# Plots 9 examples from the test set where the classifier made a mistake.
+def plot_mistakes(model, device, test_loader):
+    model.eval()    # Set the model to inference mode
+    img_path = '../efs/train'
+    lim_mistakes = 9
+    mistakes = []
+    fig, axes = plt.subplots(3, 3)
+    with torch.no_grad():   # For the inference step, gradient is not computed
+        for data0 in test_loader:
+            data = data0['image']
+            target = data0['target']
+            idd = data0['id']
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            print('pred', pred.shape)
+            print('data', data.shape)
+            print('target', target.shape)
+            print('id', idd.shape)
+            for i in range(len(pred)):
+                if pred[i,0] != target[i]:
+                    mistakes.append(idd[i])
+                    # Split up ID to find filename and bounding box.
+                    idd_lst = idd[i].split('_')
+                    fn = idd_lst[0]
+                    # Load image.
+                    im = Image.open(os.path.join(img_path,'{}.jpg'.format(fn)))
+                    (n_rows, n_cols, n_channels) = np.shape(im)
+                    # Find bounding box.
+                    [x, y, width, height] = idd_lst[2].split('-')
+                    bbox = (int(x*n_cols), int(y*n_rows), int((x+width)*n_cols), int(n_rows*(y+height)))
+                    # Crop.
+                    im_crop = im.crop(bbox)
+                    # Plot.
+                    ax = axes[(len(mistakes)-1)//3, (len(mistakes)-1)%3]
+                    ax.imshow(im_crop, cmap='gray')
+                    ax.set_title('Actual: {} Pred: {}'.format(target[i], pred[i,0]))
+                    if len(mistakes) >= lim_mistakes:
+                        plt.tight_layout()
+                        plt.savefig('mistakes.png')
+                        plt.show()
+                        return mistakes
+    return
+
 #use_cuda = True
 #device = torch.device("cuda" if use_cuda else "cpu")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -53,7 +97,7 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
@@ -86,19 +130,22 @@ log_train_err = []
 log_train_counts = []
 for i in range(len(train_total)):
     if train_total[i] != 0:
-        log_train_err.append(np.log(train_err[i] / train_total[i]))
-        log_train_counts.append(np.log(train_total[i]))
+        log_train_err.append(train_err[i] / train_total[i])
+        log_train_counts.append(train_total[i])
 
 log_val_err = []
 log_val_counts = []
 for i in range(len(train_total)):
     if train_total[i] != 0 and val_total[i] != 0:
-        log_val_err.append(np.log(val_err[i] / val_total[i]))
-        log_train_counts.append(np.log(val_total[i]))
+        log_val_err.append(val_err[i] / val_total[i])
+        log_train_counts.append(val_total[i])
 
 plt.scatter(log_train_counts, log_train_err, marker="o")
 plt.scatter(log_val_counts, log_val_err, marker="v")
+plt.xscale("log")
+plt.yscale("log")
+plt.title("Error Rate vs. Number of Training Examples Per Class")
 plt.xlabel("Log Scale Number of Training Examples For the Class")
 plt.ylabel("Log Scale Error Rate")
 plt.legend(["Train", "Validation"])
-plt.show()
+plt.savefig("plots/error_v_num_ex_per_class.png")
