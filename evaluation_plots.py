@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchvision import transforms as T
-from data_reader import CameraTrapDataset
+from data_reader import CameraTrapCropDataset
 import json
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -23,8 +23,9 @@ NUM_EPOCHS = 20
 def test(model, device, test_loader):
     model.eval()    # Set the model to inference mode
     test_loss = 0
-    error = np.zeros((267, 1))
-    total = np.zeros((267, 1))
+    error = np.zeros(267)
+    total = np.zeros(267)
+    print(error.shape)
     with torch.no_grad():   # For the inference step, gradient is not computed
         for data0 in test_loader:
             data = data0['image']
@@ -98,18 +99,18 @@ transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
-img_path = '../efs/train'
+img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 model_path = "baseline1.pt"
-percent_data = 1
+percent_data = 0.001
 # ~70k train, ~20k val
 
 print('Train Data')
-train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
+train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 print('\nVal Data')
-val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
+val_dataset = CameraTrapCropDataset(img_path, val_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
@@ -121,6 +122,7 @@ val_loader = torch.utils.data.DataLoader(
 
 model.load_state_dict(torch.load(model_path))
 train_err, train_total = test(model, device, train_loader)
+print(train_total,train_err)
 val_err, val_total = test(model, device, val_loader)
 
 log_train_err = []
@@ -129,7 +131,7 @@ for i in range(len(train_total)):
     if train_total[i] != 0:
         log_train_err.append(train_err[i] / train_total[i])
         log_train_counts.append(train_total[i])
-
+print(log_train_err, log_train_counts)
 log_val_err = []
 log_val_counts = []
 for i in range(len(train_total)):
@@ -139,15 +141,16 @@ for i in range(len(train_total)):
         else:
             log_val_err.append(0)
         log_val_counts.append(train_total[i])
-
-plt.scatter(log_train_counts, log_train_err, marker="o")
-plt.scatter(log_val_counts, log_val_err, marker="v")
+print('\n', log_val_err, log_val_counts)
+plt.plot(log_train_counts, log_train_err, 's', marker="o")
+plt.plot(log_val_counts, log_val_err, 's', marker="v")
 plt.xscale("log")
 plt.yscale("log")
 plt.title("Error Rate vs. Number of Training Examples Per Class")
 plt.xlabel("Log Scale Number of Training Examples For the Class")
 plt.ylabel("Log Scale Error Rate")
 plt.legend(["Train", "Validation"])
+plt.tight_layout()
 plt.savefig("plots/error_v_num_ex_per_class.png")
 
 # Plot 9 mistakes.
