@@ -75,7 +75,7 @@ def plot_mistakes(model, device, test_loader):
                     ax.set_title('Actual: {} Pred: {}'.format(target[i], pred[i,0]))
                     if len(mistakes) >= lim_mistakes:
                         plt.tight_layout()
-                        plt.savefig('mistakes.png')
+                        plt.savefig('plots/mistakes.png')
                         plt.show()
                         return mistakes
     return
@@ -105,7 +105,7 @@ img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 model_path = "baseline1.pt"
-percent_data = 1
+percent_data = 0.001
 # ~70k train, ~20k val
 
 print('Train Data')
