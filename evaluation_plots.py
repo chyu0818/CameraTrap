@@ -37,7 +37,7 @@ def test(model, device, test_loader):
     return error, total
 
 # Plots 9 examples from the test set where the classifier made a mistake.
-def plot_mistakes(model, device, test_loader):
+def plot_mistakes(model, device, test_loader, save_fn):
     model.eval()    # Set the model to inference mode
     img_path = '../efs/train'
     lim_mistakes = 9
@@ -75,7 +75,7 @@ def plot_mistakes(model, device, test_loader):
                     ax.set_title('Actual: {} Pred: {}'.format(target[i], pred[i,0]))
                     if len(mistakes) >= lim_mistakes:
                         plt.tight_layout()
-                        plt.savefig('plots/mistakes.png')
+                        plt.savefig(save_fn)
                         plt.show()
                         return mistakes
     return
@@ -142,6 +142,12 @@ for i in range(len(train_total)):
         else:
             log_val_err.append(0)
         log_val_counts.append(train_total[i])
+
+# Plot 9 mistakes.
+train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
+val_mistakes = plot_mistakes(model, device, val_loader, 'plots/mistakes_train.png')
+print('Train mistakes:', train_mistakes)
+print('Val mistakes:', val_mistakes)
 
 plt.scatter(log_train_counts, log_train_err, marker="o")
 plt.scatter(log_val_counts, log_val_err, marker="v")
