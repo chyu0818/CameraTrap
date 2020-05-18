@@ -143,7 +143,7 @@ for i in range(len(train_total)):
 
 # Plot 9 mistakes.
 train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-val_mistakes = plot_mistakes(model, device, val_loader, 'plots/mistakes_train.png')
+val_mistakes = plot_mistakes(model, device, val_loader, 'plots/mistakes_val.png')
 print('Train mistakes:', train_mistakes)
 print('Val mistakes:', val_mistakes)
 
