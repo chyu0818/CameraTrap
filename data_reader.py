@@ -41,8 +41,6 @@ class CameraTrapCropDataset(Dataset):
         # Create dictionary by image id.
         im_dict = self.create_im_dict(annotations, detections)
 
-        ind = 0
-
         empty_count = 0
         empty_w_bbox_count = 0
         nonempty_no_bbox_count = 0
@@ -88,7 +86,6 @@ class CameraTrapCropDataset(Dataset):
                     idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
                     self.id_lst.append(idd)
                     self.conf.append(conf)
-                    ind += 1
                 # If animal or actual human or empty
                 elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
                     if categories_dict.get(category_id) != None:
@@ -96,7 +93,6 @@ class CameraTrapCropDataset(Dataset):
                         idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
                         self.id_lst.append(idd)
                         self.conf.append(conf)
-                        ind += 1
                     else:
                         nonexistent_category_count += 1
                 else:
@@ -110,11 +106,9 @@ class CameraTrapCropDataset(Dataset):
         print('Number of images without categories:', no_category_id_count)
         print('Number of categories that do not exist:', nonexistent_category_count)
 
-        print('\nFinal number of cropped images:', total_cropped, '\n')
-        assert(total_cropped == len(self.target_lst))
-        assert(total_cropped == len(self.id_lst))
-        assert(total_cropped == len(self.conf))
-        assert(ind == total_cropped)
+        print('\nFinal number of cropped images:', len(self.id_lst), '\n')
+        assert(len(self.id_lst) == len(self.target_lst))
+        assert(len(self.id_lst) == len(self.conf))
 
 
     def create_im_dict(self, annotations, detections):

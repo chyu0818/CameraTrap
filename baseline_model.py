@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchvision import transforms as T
-from data_reader import CameraTrapDataset, CameraTrapDatasetCrop
+from data_reader import CameraTrapDataset, CameraTrapCropDataset
 import json
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -82,7 +82,7 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((256,256)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
@@ -90,7 +90,7 @@ img_path = '../efs/train_crop'
 # img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = 0.001
+percent_data = 1
 # ~70k train, ~20k val
 
 print('Train Data')
