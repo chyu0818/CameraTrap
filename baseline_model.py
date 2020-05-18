@@ -82,22 +82,30 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((256,256)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
-img_path = '../efs/train'
+img_path = '../efs/train_crop'
+# img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = 0.01
+percent_data = 0.001
 # ~70k train, ~20k val
 
 print('Train Data')
-train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+train_dataset = CameraTrapDatasetCrop(img_path, train_path, ann_path, bbox_path,
+                                  percent_data, transform=transform, 106339)
 print('\nVal Data')
-val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+val_dataset = CameraTrapDatasetCrop(img_path, val_path, ann_path, bbox_path,
+                                  percent_data, transform=transform, 34437)
+
+print('Train Data')
+# train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
+#                                   percent_data, transform=transform)
+# print('\nVal Data')
+# val_dataset = CameraTrapDataset(img_path, val_path, ann_path, bbox_path,
+#                                   percent_data, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True, **kwargs
