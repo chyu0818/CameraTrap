@@ -8,12 +8,12 @@ from PIL import Image
 
 HUMAN_CATEGORY_ID = 75
 # TOTAL_CROPPED = 106339 # val 34437
-SIZE = 256
+SIZE = 128
 #If available use GPU memory to load data
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
 class CameraTrapDatasetCrop(Dataset):
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None, total_cropped):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None, total_cropped=1):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images

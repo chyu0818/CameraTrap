@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchvision import transforms as T
-from data_reader import CameraTrapDataset
+from data_reader import CameraTrapDataset, CameraTrapDatasetCrop
 import json
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -11,9 +11,9 @@ import torch.nn.functional as F
 import numpy as np
 import time
 
-BATCH_SIZE_TRAIN = 1000
-BATCH_SIZE_VAL = 1000
-LOG_INTERVAL = 10
+BATCH_SIZE_TRAIN = 512
+BATCH_SIZE_VAL = 512
+LOG_INTERVAL = 20
 NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
 def train(model, device, train_loader, optimizer, epoch):
@@ -82,7 +82,7 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((256,256)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
@@ -95,10 +95,10 @@ percent_data = 0.001
 
 print('Train Data')
 train_dataset = CameraTrapDatasetCrop(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform, 106339)
+                                  percent_data, transform=transform, total_cropped=106339)
 print('\nVal Data')
 val_dataset = CameraTrapDatasetCrop(img_path, val_path, ann_path, bbox_path,
-                                  percent_data, transform=transform, 34437)
+                                  percent_data, transform=transform, total_cropped=34437)
 
 print('Train Data')
 # train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
