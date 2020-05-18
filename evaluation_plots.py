@@ -53,7 +53,7 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((64, 64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
@@ -93,12 +93,15 @@ log_val_err = []
 log_val_counts = []
 for i in range(len(train_total)):
     if train_total[i] != 0 and val_total[i] != 0:
-        log_val_err.append(np.log(val_err[i] / val_total[i]))
-        log_train_counts.append(np.log(val_total[i]))
+        if val_err[i] != 0:
+            log_val_err.append(np.log(val_err[i] / val_total[i]))
+        else:
+            log_val_err.append(0)
+        log_val_counts.append(np.log(train_total[i]))
 
 plt.scatter(log_train_counts, log_train_err, marker="o")
 plt.scatter(log_val_counts, log_val_err, marker="v")
 plt.xlabel("Log Scale Number of Training Examples For the Class")
 plt.ylabel("Log Scale Error Rate")
 plt.legend(["Train", "Validation"])
-plt.show()
+plt.savefig("performance.png")
