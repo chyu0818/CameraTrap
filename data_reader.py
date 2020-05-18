@@ -7,21 +7,15 @@ import json
 from PIL import Image
 
 HUMAN_CATEGORY_ID = 75
-# TOTAL_CROPPED = 106339 # val 34437
-SIZE = 128
-#If available use GPU memory to load data
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda:0" if use_cuda else "cpu")
-class CameraTrapDatasetCrop(Dataset):
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None, total_cropped=1):
+class CameraTrapCropDataset(Dataset):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images
         annotations_fn: filename for annotations
         bbox_fn: filename for detections
         '''
-        # List of cropped images from bounding boxes.
-        self.im_lst = torch.zeros([total_cropped, 3, SIZE, SIZE], dtype=torch.float64, device=device)
+        self.im_fp = im_fp
         self.target_lst = []   # List of target categories.
         self.id_lst = []   # List of image ids corresponding to each bounding box.
         self.conf = []   # List of confidence values.
@@ -92,9 +86,6 @@ class CameraTrapDatasetCrop(Dataset):
                     self.target_lst.append(categories_dict[HUMAN_CATEGORY_ID])
                     # ID: filename, index in detections, and bounding box coordinates
                     idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
-                    # Load image.
-                    im_crop = Image.open(os.path.join(im_fp,'{}.jpg'.format(idd)))
-                    self.im_lst[ind] = self.transform(im_crop).to(device)
                     self.id_lst.append(idd)
                     self.conf.append(conf)
                     ind += 1
@@ -103,9 +94,6 @@ class CameraTrapDatasetCrop(Dataset):
                     if categories_dict.get(category_id) != None:
                         self.target_lst.append(categories_dict[category_id])
                         idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
-                        # Load image.
-                        im_crop = Image.open(os.path.join(im_fp,'{}.jpg'.format(idd)))
-                        self.im_lst[ind] = self.transform(im_crop).to(device)
                         self.id_lst.append(idd)
                         self.conf.append(conf)
                         ind += 1
@@ -145,10 +133,12 @@ class CameraTrapDatasetCrop(Dataset):
 
 
     def __len__(self):
-        return len(self.im_lst)
+        return len(self.id_lst)
 
     def __getitem__(self, idx):
-        return {'image':self.im_lst[idx], 'target':self.target_lst[idx], 'id':self.id_lst[idx]}
+        # Load image.
+        im_crop = Image.open(os.path.join(self.im_fp,'{}.jpg'.format(self.id_lst[idx])))
+        return {'image':self.transform(im_crop), 'target':self.target_lst[idx], 'id':self.id_lst[idx]}
 
 class CameraTrapDataset(Dataset):
     def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):

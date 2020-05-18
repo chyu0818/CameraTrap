@@ -94,13 +94,13 @@ percent_data = 0.001
 # ~70k train, ~20k val
 
 print('Train Data')
-train_dataset = CameraTrapDatasetCrop(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform, total_cropped=106339)
+train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
+                                  percent_data, transform=transform)
 print('\nVal Data')
-val_dataset = CameraTrapDatasetCrop(img_path, val_path, ann_path, bbox_path,
-                                  percent_data, transform=transform, total_cropped=34437)
+val_dataset = CameraTrapCropDataset(img_path, val_path, ann_path, bbox_path,
+                                  percent_data, transform=transform)
 
-print('Train Data')
+# print('Train Data')
 # train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
 #                                   percent_data, transform=transform)
 # print('\nVal Data')
