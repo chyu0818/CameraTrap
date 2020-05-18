@@ -11,8 +11,8 @@ import torch.nn.functional as F
 import numpy as np
 import time
 
-BATCH_SIZE_TRAIN = 512
-BATCH_SIZE_VAL = 512
+BATCH_SIZE_TRAIN = 1000
+BATCH_SIZE_VAL = 1000
 LOG_INTERVAL = 20
 NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
@@ -72,8 +72,8 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if device=='cuda' else {}
 model = models.resnet18(pretrained=True)
 
 # Fix everything but final layer
-for param in model.parameters():
-    param.requires_grad = False
+# for param in model.parameters():
+#     param.requires_grad = False
 
 model.fc = torch.nn.Linear(512, NUM_CLASSES)
 model.to(device)
@@ -82,7 +82,7 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((128,128)), T.ToTensor(), normalize])
+transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
 val_path = 'X_val.npz'
