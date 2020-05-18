@@ -138,10 +138,10 @@ log_val_counts = []
 for i in range(len(train_total)):
     if train_total[i] != 0 and val_total[i] != 0:
         if val_err[i] != 0:
-            log_val_err.append(np.log(val_err[i] / val_total[i]))
+            log_val_err.append(val_err[i] / val_total[i])
         else:
             log_val_err.append(0)
-        log_val_counts.append(np.log(train_total[i]))
+        log_val_counts.append(train_total[i])
 
 plt.scatter(log_train_counts, log_train_err, marker="o")
 plt.scatter(log_val_counts, log_val_err, marker="v")
