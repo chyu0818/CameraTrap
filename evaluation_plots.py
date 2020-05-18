@@ -74,7 +74,6 @@ def plot_mistakes(model, device, test_loader, save_fn):
                     if len(mistakes) >= lim_mistakes:
                         plt.tight_layout()
                         plt.savefig(save_fn)
-                        plt.show()
                         return mistakes
     return
 
@@ -141,12 +140,6 @@ for i in range(len(train_total)):
             log_val_err.append(0)
         log_val_counts.append(train_total[i])
 
-# Plot 9 mistakes.
-train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-val_mistakes = plot_mistakes(model, device, val_loader, 'plots/mistakes_val.png')
-print('Train mistakes:', train_mistakes)
-print('Val mistakes:', val_mistakes)
-
 plt.scatter(log_train_counts, log_train_err, marker="o")
 plt.scatter(log_val_counts, log_val_err, marker="v")
 plt.xscale("log")
@@ -156,3 +149,9 @@ plt.xlabel("Log Scale Number of Training Examples For the Class")
 plt.ylabel("Log Scale Error Rate")
 plt.legend(["Train", "Validation"])
 plt.savefig("plots/error_v_num_ex_per_class.png")
+
+# Plot 9 mistakes.
+train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
+val_mistakes = plot_mistakes(model, device, val_loader, 'plots/mistakes_val.png')
+print('Train mistakes:', train_mistakes)
+print('Val mistakes:', val_mistakes)
