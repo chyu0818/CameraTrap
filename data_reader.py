@@ -98,7 +98,7 @@ class CameraTrapDataset(Dataset):
                     im_crop = im.crop(bbox)
                     self.im_lst.append(self.transform(im_crop))
                     # ID: filename, index in detections, and bounding box coordinates
-                    self.id_lst.append('{}_{}_{}.jpg'.format(f, i, '-'.join([str(dd) for dd in d['bbox']])))
+                    self.id_lst.append('{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']])))
                     self.conf.append(conf)
                 # If animal or actual human or empty
                 elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
@@ -107,7 +107,7 @@ class CameraTrapDataset(Dataset):
                         # Crop image with PIL.
                         im_crop = im.crop(bbox)
                         self.im_lst.append(self.transform(im_crop))
-                        self.id_lst.append('{}_{}_{}.jpg'.format(f, i, '-'.join([str(dd) for dd in d['bbox']])))
+                        self.id_lst.append('{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']])))
                         self.conf.append(conf)
                     else:
                         nonexistent_category_count += 1

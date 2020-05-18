@@ -11,6 +11,8 @@ import torch.nn.functional as F
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+from PIL import Image
+import os
 
 BATCH_SIZE_TRAIN = 1000
 BATCH_SIZE_VAL = 1000
@@ -31,7 +33,6 @@ def test(model, device, test_loader):
             output = model(data)
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             for i in range(len(pred)):
-                print(target[i], pred[i,0])
                 if pred[i,0] != target[i]:
                     error[target[i]] += 1
                 total[target[i]] += 1
@@ -52,9 +53,6 @@ def plot_mistakes(model, device, test_loader, save_fn):
             data, target = data.to(device), target.to(device)
             output = model(data)
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-            print('pred', pred.shape)
-            print('data', data.shape)
-            print('target', target.shape)
             for i in range(len(pred)):
                 if pred[i,0] != target[i]:
                     mistakes.append(idd[i])
@@ -65,7 +63,7 @@ def plot_mistakes(model, device, test_loader, save_fn):
                     im = Image.open(os.path.join(img_path,'{}.jpg'.format(fn)))
                     (n_rows, n_cols, n_channels) = np.shape(im)
                     # Find bounding box.
-                    [x, y, width, height] = idd_lst[2].split('-')
+                    [x, y, width, height] = [float(dim) for dim in idd_lst[2].split('-')]
                     bbox = (int(x*n_cols), int(y*n_rows), int((x+width)*n_cols), int(n_rows*(y+height)))
                     # Crop.
                     im_crop = im.crop(bbox)
