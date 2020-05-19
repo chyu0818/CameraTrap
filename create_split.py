@@ -13,21 +13,26 @@ def create_split(annotations, images):
 
     # Split locations into train/val/test 70/20/10
     n = len(locs)
-    train_locs = locs[:round(0.8*n)]
-    val_locs = locs[round(0.8*n):round(0.9*n)]
-    test_locs = locs[round(0.9*n):]
+    train_locs = locs[:round(0.5*n)]
+    val_locs = locs[round(0.5*n):round(0.55*n)]
+    test_locs = locs[round(0.55*n):]
 
     # Get list of images for each set first and then we'll split annotations
     train_images = set([])
+    sequences = set([])
     val_images = set([])
     test_images = set([])
     test_cis_images = set([])
+    map_to_seq = {}
 
     for item in images:
         if item['location'] in train_locs:
-            # odd days get assigned to test set
-            if int(item['datetime'][8:10]) % 2 == 0:
+            # even days get assigned to test set
+            if int(item['datetime'][8:10]) % 3 == 1 or int(item['datetime'][8:10]) % 3 == 0:
                 train_images.add(item['id'])
+                map_to_seq[item['id']] = item['seq_id']
+                if item['seq_id'] not in sequences:
+                    sequences.add(item['seq_id'])
             else:
                 test_cis_images.add(item['id'])
         elif item['location'] in val_locs:
@@ -62,17 +67,46 @@ def create_split(annotations, images):
             test_annotations.append(item['image_id'])
             y_test.append(item['category_id'])
 
-    print("training", len(train_annotations) * 0.95)
+    cis_val_count = 0
+    sequences = list(np.random.permutation(list(sequences)))
+    new_val_annotations = []
+    new_val_labels = []
+    while cis_val_count < 0.05*len(train_annotations):
+        curr = sequences.pop()
+        for i, item in enumerate(train_annotations):
+            if map_to_seq[item] == curr:
+                new_val_annotations.append(item)
+                new_val_labels.append(y_train[i])
+                cis_val_count += 1
+
+    val_annotations.extend(new_val_annotations)
+    y_val.extend(new_val_labels)
+
+    X_train = []
+    new_y_train = []
+    new_val_annotations = set(new_val_annotations)
+    for i, item in enumerate(train_annotations):
+        if item not in new_val_annotations:
+            X_train.append(item)
+            new_y_train.append(y_train[i])
+
+    print("training", len(X_train))
     print("trans_val", len(val_annotations))
-    print("cis_val", len(train_annotations) * 0.05)
+    print("cis_val", cis_val_count)
     print("trans_test", test_trans_count)
-    print("val_test", test_cis_count)
+    print("cis_test", test_cis_count)
 
     # Move 5% to validation
-    X_train, X_val, y_train, label_val = train_test_split(train_annotations, y_train, test_size = 0.05)
-    val_annotations.extend(X_val)
-    y_val.extend(label_val)
-    return X_train, val_annotations, test_annotations, y_train, y_val, y_test
+    # X_train, X_val, y_train, label_val = train_test_split(train_annotations, y_train, test_size = 0.05)
+    # val_annotations.extend(X_val)
+    # y_val.extend(label_val)
+    assert (len(X_train) == len(new_y_train))
+    assert (len(val_annotations) == len(y_val))
+    assert (len(test_annotations) == len(y_test))
+    assert (len(X_train) != 0)
+    assert (len(y_val) != 0)
+    assert (len(y_test) != 0)
+    return X_train, val_annotations, test_annotations, new_y_train, y_val, y_test
 
 if __name__ == '__main__':
     with open('iwildcam2020_train_annotations.json') as f:
