@@ -102,8 +102,8 @@ val_path = 'X_val.npz'
 img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-model_path = "baseline1.pt"
-percent_data = 0.001
+model_path = "models/baseline1.pt"
+percent_data = 1
 # ~70k train, ~20k val
 
 print('Train Data')
@@ -144,8 +144,8 @@ for i in range(len(train_total)):
 print('\n', log_val_err, log_val_counts)
 plt.plot(log_train_counts, log_train_err, 's', marker="o")
 plt.plot(log_val_counts, log_val_err, 's', marker="v")
-plt.xscale("log")
-plt.yscale("log")
+plt.xscale("symlog")
+plt.yscale("symlog")
 plt.title("Error Rate vs. Number of Training Examples Per Class")
 plt.xlabel("Log Scale Number of Training Examples For the Class")
 plt.ylabel("Log Scale Error Rate")
