@@ -143,72 +143,72 @@ num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
 num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
 
 model.load_state_dict(torch.load(model_path))
-print('Training set:')
-train_err, train_total, train_loss = test(model, device, train_loader)
-print('Validation set (cis):')
-val_cis_err, val_cis_total, val_cis_loss = test(model, device, val_cis_loader)
-print('Validation set (trans):')
-val_trans_err, val_trans_total, val_trans_loss = test(model, device, val_trans_loader)
-val_err = val_cis_err + val_trans_err
-val_total = val_cis_total + val_trans_total
-val_loss = num_val_cis_frac * val_cis_loss + num_val_trans_frac * val_trans_loss
-print('Overall validation set loss:', val_loss)
-
-log_train_err = []
-log_train_counts = []
-for i in range(len(train_total)):
-    if train_total[i] != 0:
-        log_train_err.append(train_err[i] / train_total[i])
-        log_train_counts.append(train_total[i])
-log_val_cis_err = []
-log_val_cis_counts = []
-log_val_trans_err = []
-log_val_trans_counts = []
-log_val_err = []
-log_val_counts = []
-for i in range(len(train_total)):
-    if train_total[i] != 0 and val_cis_total[i] != 0:
-        if val_cis_err[i] != 0:
-            log_val_cis_err.append(val_cis_err[i] / val_cis_total[i])
-        else:
-            log_val_cis_err.append(0)
-        log_val_cis_counts.append(train_total[i])
-    if train_total[i] != 0 and val_trans_total[i] != 0:
-        if val_trans_err[i] != 0:
-            log_val_trans_err.append(val_trans_err[i] / val_trans_total[i])
-        else:
-            log_val_trans_err.append(0)
-        log_val_trans_counts.append(train_total[i])
-    if train_total[i] != 0 and val_total[i] != 0:
-        if val_err[i] != 0:
-            log_val_err.append(val_err[i] / val_total[i])
-        else:
-            log_val_err.append(0)
-        log_val_counts.append(train_total[i])
-
-plt.plot(log_train_counts, log_train_err, 's', marker="o")
-plt.plot(log_val_counts, log_val_err, 's', marker="s")
-
-plt.xscale("symlog")
-plt.yscale("symlog")
-plt.title("Error Rate vs. Number of Training Examples Per Class")
-plt.xlabel("Number of Training Examples For the Class")
-plt.ylabel("Error Rate")
-plt.legend(["Train", "Validation"])
-plt.tight_layout()
-plt.savefig("plots/error_v_num_ex_per_class_general.png")
-
-plt.plot(log_val_cis_counts, log_val_cis_err, 's', marker="v")
-plt.plot(log_val_trans_counts, log_val_trans_err, 's', marker="x")
-
-plt.xscale("symlog")
-plt.yscale("symlog")
-plt.title("Error Rate vs. Number of Training Examples Per Class")
-plt.xlabel("Number of Training Examples For the Class")
-plt.ylabel("Error Rate")
-plt.legend(["Train", "Validation", "Validation (cis)", "Validation (trans)"])
-plt.tight_layout()
-plt.savefig("plots/error_v_num_ex_per_class.png")
+# print('Training set:')
+# train_err, train_total, train_loss = test(model, device, train_loader)
+# print('Validation set (cis):')
+# val_cis_err, val_cis_total, val_cis_loss = test(model, device, val_cis_loader)
+# print('Validation set (trans):')
+# val_trans_err, val_trans_total, val_trans_loss = test(model, device, val_trans_loader)
+# val_err = val_cis_err + val_trans_err
+# val_total = val_cis_total + val_trans_total
+# val_loss = num_val_cis_frac * val_cis_loss + num_val_trans_frac * val_trans_loss
+# print('Overall validation set loss:', val_loss)
+#
+# log_train_err = []
+# log_train_counts = []
+# for i in range(len(train_total)):
+#     if train_total[i] != 0:
+#         log_train_err.append(train_err[i] / train_total[i])
+#         log_train_counts.append(train_total[i])
+# log_val_cis_err = []
+# log_val_cis_counts = []
+# log_val_trans_err = []
+# log_val_trans_counts = []
+# log_val_err = []
+# log_val_counts = []
+# for i in range(len(train_total)):
+#     if train_total[i] != 0 and val_cis_total[i] != 0:
+#         if val_cis_err[i] != 0:
+#             log_val_cis_err.append(val_cis_err[i] / val_cis_total[i])
+#         else:
+#             log_val_cis_err.append(0)
+#         log_val_cis_counts.append(train_total[i])
+#     if train_total[i] != 0 and val_trans_total[i] != 0:
+#         if val_trans_err[i] != 0:
+#             log_val_trans_err.append(val_trans_err[i] / val_trans_total[i])
+#         else:
+#             log_val_trans_err.append(0)
+#         log_val_trans_counts.append(train_total[i])
+#     if train_total[i] != 0 and val_total[i] != 0:
+#         if val_err[i] != 0:
+#             log_val_err.append(val_err[i] / val_total[i])
+#         else:
+#             log_val_err.append(0)
+#         log_val_counts.append(train_total[i])
+#
+# plt.plot(log_train_counts, log_train_err, 's', marker="o")
+# plt.plot(log_val_counts, log_val_err, 's', marker="s")
+#
+# plt.xscale("symlog")
+# plt.yscale("symlog")
+# plt.title("Error Rate vs. Number of Training Examples Per Class")
+# plt.xlabel("Number of Training Examples For the Class")
+# plt.ylabel("Error Rate")
+# plt.legend(["Train", "Validation"])
+# plt.tight_layout()
+# plt.savefig("plots/error_v_num_ex_per_class_general.png")
+#
+# plt.plot(log_val_cis_counts, log_val_cis_err, 's', marker="v")
+# plt.plot(log_val_trans_counts, log_val_trans_err, 's', marker="x")
+#
+# plt.xscale("symlog")
+# plt.yscale("symlog")
+# plt.title("Error Rate vs. Number of Training Examples Per Class")
+# plt.xlabel("Number of Training Examples For the Class")
+# plt.ylabel("Error Rate")
+# plt.legend(["Train", "Validation", "Validation (cis)", "Validation (trans)"])
+# plt.tight_layout()
+# plt.savefig("plots/error_v_num_ex_per_class.png")
 
 # Plot 9 mistakes.
 train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
