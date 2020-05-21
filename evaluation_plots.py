@@ -21,10 +21,13 @@ NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
 
 def test(model, device, test_loader):
+    criterion = nn.CrossEntropyLoss(reduction='sum')
     model.eval()    # Set the model to inference mode
-    test_loss = 0
     error = np.zeros(267)
     total = np.zeros(267)
+    test_loss = 0
+    correct = 0
+    total1 = 0
     print(error.shape)
     with torch.no_grad():   # For the inference step, gradient is not computed
         for data0 in test_loader:
@@ -35,15 +38,15 @@ def test(model, device, test_loader):
             test_loss += criterion(output, target).item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
-            total += len(target)
+            total1 += len(target)
             for i in range(len(pred)):
                 if pred[i,0] != target[i]:
                     error[target[i]] += 1
                 total[target[i]] += 1
-    test_loss /= total
+    test_loss /= total1
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, total,
-        100. * correct / total))
+        test_loss, correct, total1,
+        100. * correct / total1))
     return error, total, test_loss
 
 # Plots 9 examples from the test set where the classifier made a mistake.
