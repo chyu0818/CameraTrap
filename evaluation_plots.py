@@ -103,13 +103,13 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
 transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
-val_cis_path = 'X_cis_val.npz'
-val_trans_path = 'X_trans_val.npz'
+val_cis_path = 'X_val_cis.npz'
+val_trans_path = 'X_val_trans.npz'
 img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 model_path = "baseline1_4.pt"
-percent_data = 1
+percent_data = 0.01
 # ~70k train, ~20k val
 
 print('Train Data')
