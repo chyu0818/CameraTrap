@@ -96,32 +96,42 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
 transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
-val_path = 'X_val.npz'
+val_cis_path = 'X_cis_val.npz'
+val_trans_path = 'X_trans_val.npz'
 img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-model_path = "models/baseline1.pt"
+model_path = "baseline1_4.pt"
 percent_data = 1
 # ~70k train, ~20k val
 
 print('Train Data')
 train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
-print('\nVal Data')
-val_dataset = CameraTrapCropDataset(img_path, val_path, ann_path, bbox_path,
+print('\nVal Data (cis)')
+val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
+                                  percent_data, transform=transform)
+
+print('\nVal Data (trans)')
+val_trans_dataset = CameraTrapCropDataset(img_path, val_trans_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True, **kwargs
 )
-val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
+val_cis_loader = torch.utils.data.DataLoader(
+        val_cis_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
+)
+val_trans_loader = torch.utils.data.DataLoader(
+        val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
 )
 
 model.load_state_dict(torch.load(model_path))
 train_err, train_total = test(model, device, train_loader)
-print(train_total,train_err)
-val_err, val_total = test(model, device, val_loader)
+val_cis_err, val_cis_total = test(model, device, val_cis_loader)
+val_trans_err, val_trans_total = test(model, device, val_trans_loader)
+val_err = val_cis_err + val_trans_err
+val_total = val_cis_total + val_trans_total
 
 log_train_err = []
 log_train_counts = []
@@ -129,30 +139,61 @@ for i in range(len(train_total)):
     if train_total[i] != 0:
         log_train_err.append(train_err[i] / train_total[i])
         log_train_counts.append(train_total[i])
-print(log_train_err, log_train_counts)
+log_val_cis_err = []
+log_val_cis_counts = []
+log_val_trans_err = []
+log_val_trans_counts = []
 log_val_err = []
 log_val_counts = []
 for i in range(len(train_total)):
+    if train_total[i] != 0 and val_cis_total[i] != 0:
+        if val_cis_err[i] != 0:
+            log_val_cis_err.append(val_cis_err[i] / val_cis_total[i])
+        else:
+            log_val_cis_err.append(0)
+        log_val_cis_counts.append(train_total[i])
+    if train_total[i] != 0 and val_trans_total[i] != 0:
+        if val_trans_err[i] != 0:
+            log_val_trans_err.append(val_trans_err[i] / val_trans_total[i])
+        else:
+            log_val_trans_err.append(0)
+        log_val_trans_counts.append(train_total[i])
     if train_total[i] != 0 and val_total[i] != 0:
         if val_err[i] != 0:
             log_val_err.append(val_err[i] / val_total[i])
         else:
             log_val_err.append(0)
         log_val_counts.append(train_total[i])
-print('\n', log_val_err, log_val_counts)
+
 plt.plot(log_train_counts, log_train_err, 's', marker="o")
-plt.plot(log_val_counts, log_val_err, 's', marker="v")
+plt.plot(log_val_counts, log_val_err, 's', marker="s")
+plt.plot(log_val_cis_counts, log_val_cis_err, 's', marker="v")
+plt.plot(log_val_trans_counts, log_val_trans_err, 's', marker="x")
+
 plt.xscale("symlog")
 plt.yscale("symlog")
 plt.title("Error Rate vs. Number of Training Examples Per Class")
-plt.xlabel("Log Scale Number of Training Examples For the Class")
-plt.ylabel("Log Scale Error Rate")
-plt.legend(["Train", "Validation"])
+plt.xlabel("Number of Training Examples For the Class")
+plt.ylabel("Error Rate")
+plt.legend(["Train", "Validation", "Validation (cis), Validation (trans)"])
 plt.tight_layout()
 plt.savefig("plots/error_v_num_ex_per_class.png")
 
+plt.plot(log_train_counts, log_train_err, 's', marker="o")
+plt.plot(log_val_counts, log_val_err, 's', marker="s")
+
+plt.xscale("symlog")
+plt.yscale("symlog")
+plt.title("Error Rate vs. Number of Training Examples Per Class")
+plt.xlabel("Number of Training Examples For the Class")
+plt.ylabel("Error Rate")
+plt.legend(["Train", "Validation"])
+plt.tight_layout()
+plt.savefig("plots/error_v_num_ex_per_class_general.png")
+
 # Plot 9 mistakes.
 train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-val_mistakes = plot_mistakes(model, device, val_loader, 'plots/mistakes_val.png')
+val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
+val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
 print('Train mistakes:', train_mistakes)
 print('Val mistakes:', val_mistakes)
