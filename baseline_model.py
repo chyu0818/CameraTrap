@@ -66,21 +66,6 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-# # Plots training and val loss as a function of the epoch.
-# def plot_train_test_loss_epoch(train_loss, test_cis_loss, test_trans_loss, num_epochs, name):
-#     fig, ax = plt.subplots()
-#     epochs = list(range(1,num_epochs+1))
-#     test_loss = [for i in range(num_epochs)]
-#     ax.plot(epochs, train_loss, color='r', marker='.', label='Train')
-#     ax.plot(epochs, test_loss, color='b', marker='.', label='Validation')
-#     ax.plot(epochs, test_cis_loss, color='g', marker='.', label='Validation (Cis)')
-#     ax.plot(epochs, test_trans_loss, color='c', marker='.', label='Validation (Trans)')
-#     ax.set(xlabel='Epoch', ylabel='Loss', yscale='log', title='Loss By Epoch')
-#     ax.legend(title='Type of Loss')
-#     plt.tight_layout()
-#     plt.save_fig(name)
-#     return
-
 #use_cuda = True
 #device = torch.device("cuda" if use_cuda else "cpu")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -172,4 +157,3 @@ print("Validation Set (trans):")
 test(model, device, val_trans_loader)
 print("Training Set:")
 test(model, device, train_loader)
-# plot_train_test_loss_epoch(train_losses, test_cis_losses, test_trans_losses, NUM_EPOCHS, "loss_by_epoch{}.pt".format(percent_data))

@@ -41,6 +41,10 @@ def test(model, device, test_loader):
 
 # Plots 9 examples from the test set where the classifier made a mistake.
 def plot_mistakes(model, device, test_loader, save_fn):
+    annotations_fn = 'iwildcam2020_train_annotations.json'
+    with open(annotations_fn) as f:
+        annotations0 = json.load(f)
+    all_categories = annotations0['categories']
     model.eval()    # Set the model to inference mode
     img_path = '../efs/train'
     lim_mistakes = 9
@@ -71,22 +75,16 @@ def plot_mistakes(model, device, test_loader, save_fn):
                     # Plot.
                     ax = axes[(len(mistakes)-1)//3, (len(mistakes)-1)%3]
                     ax.imshow(im_crop, cmap='gray')
-                    ax.set_title('Actual: {} Pred: {}'.format(target[i], pred[i,0]))
+                    ax.set_title('Actual: {} Pred: {}'.format(all_categories[idx]['name'][target[i]], all_categories[idx]['name'][pred[i,0]]))
                     if len(mistakes) >= lim_mistakes:
                         plt.tight_layout()
                         plt.savefig(save_fn)
                         return mistakes
     return
 
-#use_cuda = True
-#device = torch.device("cuda" if use_cuda else "cpu")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if device=='cuda' else {}
 model = models.resnet18(pretrained=True)
-
-# Fix everything but final layer
-for param in model.parameters():
-    param.requires_grad = False
 
 model.fc = torch.nn.Linear(512, NUM_CLASSES)
 model.to(device)
