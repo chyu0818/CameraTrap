@@ -113,7 +113,7 @@ img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 model_path = "baseline1_4.pt"
-percent_data = 0.01
+percent_data = 1
 # ~70k train, ~20k val
 
 print('Train Data')
