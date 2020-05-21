@@ -85,7 +85,8 @@ def plot_mistakes(model, device, test_loader, save_fn):
                     # Plot.
                     ax = axes[(len(mistakes)-1)//3, (len(mistakes)-1)%3]
                     ax.imshow(im_crop, cmap='gray')
-                    ax.set_title('Actual: {} Pred: {}'.format(all_categories[target[i]]['name'], all_categories[pred[i,0]]['name']))
+                    ax.set_title('Actual: {} Pred: {}'.format(target[i], pred[i,0]))
+                    print('Actual:', target[i], all_categories[target[i]]['name'], 'Pred:', pred[i,0], all_categories[pred[i,0]]['name'])
                     if len(mistakes) >= lim_mistakes:
                         plt.tight_layout()
                         plt.savefig(save_fn)
