@@ -32,12 +32,19 @@ def test(model, device, test_loader):
             target = data0['target']
             data, target = data.to(device), target.to(device)
             output = model(data)
+            test_loss += criterion(output, target).item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            total += len(target)
             for i in range(len(pred)):
                 if pred[i,0] != target[i]:
                     error[target[i]] += 1
                 total[target[i]] += 1
-    return error, total
+    test_loss /= total
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test_loss, correct, total,
+        100. * correct / total))
+    return error, total, test_loss
 
 # Plots 9 examples from the test set where the classifier made a mistake.
 def plot_mistakes(model, device, test_loader, save_fn):
@@ -126,12 +133,22 @@ val_trans_loader = torch.utils.data.DataLoader(
         val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
 )
 
+num_val_cis = 3307
+num_val_trans = 6382
+num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
+num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
+
 model.load_state_dict(torch.load(model_path))
-train_err, train_total = test(model, device, train_loader)
-val_cis_err, val_cis_total = test(model, device, val_cis_loader)
-val_trans_err, val_trans_total = test(model, device, val_trans_loader)
+print('Training set:')
+train_err, train_total, train_loss = test(model, device, train_loader)
+print('Validation set (cis):')
+val_cis_err, val_cis_total, val_cis_loss = test(model, device, val_cis_loader)
+print('Validation set (trans):')
+val_trans_err, val_trans_total, val_trans_loss = test(model, device, val_trans_loader)
 val_err = val_cis_err + val_trans_err
 val_total = val_cis_total + val_trans_total
+val_loss = num_val_cis_frac * val_cis_loss + num_val_trans_frac * val_trans_loss
+print('Overall validation set loss:', val_loss)
 
 log_train_err = []
 log_train_counts = []
