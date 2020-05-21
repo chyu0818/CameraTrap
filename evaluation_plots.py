@@ -187,6 +187,16 @@ for i in range(len(train_total)):
 
 plt.plot(log_train_counts, log_train_err, 's', marker="o")
 plt.plot(log_val_counts, log_val_err, 's', marker="s")
+
+plt.xscale("symlog")
+plt.yscale("symlog")
+plt.title("Error Rate vs. Number of Training Examples Per Class")
+plt.xlabel("Number of Training Examples For the Class")
+plt.ylabel("Error Rate")
+plt.legend(["Train", "Validation"])
+plt.tight_layout()
+plt.savefig("plots/error_v_num_ex_per_class_general.png")
+
 plt.plot(log_val_cis_counts, log_val_cis_err, 's', marker="v")
 plt.plot(log_val_trans_counts, log_val_trans_err, 's', marker="x")
 
@@ -198,18 +208,6 @@ plt.ylabel("Error Rate")
 plt.legend(["Train", "Validation", "Validation (cis)", "Validation (trans)"])
 plt.tight_layout()
 plt.savefig("plots/error_v_num_ex_per_class.png")
-
-plt.plot(log_train_counts, log_train_err, 's', marker="o")
-plt.plot(log_val_counts, log_val_err, 's', marker="s")
-
-plt.xscale("symlog")
-plt.yscale("symlog")
-plt.title("Error Rate vs. Number of Training Examples Per Class")
-plt.xlabel("Number of Training Examples For the Class")
-plt.ylabel("Error Rate")
-plt.legend(["Train", "Validation"])
-plt.tight_layout()
-plt.savefig("plots/error_v_num_ex_per_class_general.png")
 
 # Plot 9 mistakes.
 train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
