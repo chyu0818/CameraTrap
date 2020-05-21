@@ -10,6 +10,7 @@ from torch.optim.lr_scheduler import StepLR
 import torch.nn.functional as F
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 BATCH_SIZE_TRAIN = 1000
 BATCH_SIZE_VAL = 1000
@@ -85,7 +86,8 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
 transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
 train_path = 'X_train.npz'
-val_path = 'X_val.npz'
+val_cis_path = 'X_val_cis.npz'
+val_trans_path = 'X_val_trans.npz'
 img_path = '../efs/train_crop'
 # img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
@@ -96,8 +98,12 @@ percent_data = 1
 print('Train Data')
 train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
-print('\nVal Data')
-val_dataset = CameraTrapCropDataset(img_path, val_path, ann_path, bbox_path,
+print('\nVal Cis-Location Data')
+val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
+                                  percent_data, transform=transform)
+
+print('\nVal Trans-Location Data')
+val_trans_dataset = CameraTrapCropDataset(img_path, val_trans_path, ann_path, bbox_path,
                                   percent_data, transform=transform)
 
 # print('Train Data')
@@ -110,8 +116,11 @@ val_dataset = CameraTrapCropDataset(img_path, val_path, ann_path, bbox_path,
 train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True, **kwargs
 )
-val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
+val_cis_loader = torch.utils.data.DataLoader(
+        val_cis_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
+)
+val_trans_loader = torch.utils.data.DataLoader(
+        val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
 )
 
 lr = 1
@@ -123,22 +132,28 @@ scheduler = StepLR(optimizer, step_size=step, gamma=gamma)
 
 # Training loop
 train_losses = []
-test_losses = []
+test_cis_losses = []
+test_trans_losses = []
 start = time.time()
 for epoch in range(1, NUM_EPOCHS + 1):
     train_loss = train(model, device, train_loader, optimizer, epoch)
-    test_loss = test(model, device, val_loader)
+    test_cis_loss = test(model, device, val_cis_loader)
+    test_trans_loss = test(model, device, val_trans_loader)
     train_losses.append(train_loss)
-    test_losses.append(test_loss)
+    test_cis_losses.append(test_cis_loss)
+    test_trans_losses.append(test_trans_loss)
     scheduler.step()    # learning rate scheduler
+    torch.save(model.state_dict(), "baseline{}_{}.pt".format(percent_data,epoch))
 print('Train Time:', time.time()-start)
 # You may optionally save your model at each epoch here
 np.save("train_loss{}.npy".format(percent_data), np.array(train_losses))
-np.save("test_loss{}.npy".format(percent_data), np.array(test_losses))
+np.save("test_cis_loss{}.npy".format(percent_data), np.array(test_cis_losses))
+np.save("test_trans_loss{}.npy".format(percent_data), np.array(test_trans_losses))
 
 print("\nFinal Performance!")
-print("Validation Set:")
-test(model, device, val_loader)
+print("Validation Set (cis):")
+test(model, device, val_cis_loader)
+print("Validation Set (trans):")
+test(model, device, val_trans_loader)
 print("Training Set:")
 test(model, device, train_loader)
-torch.save(model.state_dict(), "baseline{}.pt".format(percent_data))
