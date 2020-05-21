@@ -51,7 +51,7 @@ def test(model, device, test_loader):
 
 # Plots 9 examples from the test set where the classifier made a mistake.
 def plot_mistakes(model, device, test_loader, save_fn):
-    annotations_fn = 'iwildcam2020_train_annotations.json'
+    annotations_fn = '../efs/iwildcam2020_train_annotations.json'
     with open(annotations_fn) as f:
         annotations0 = json.load(f)
     all_categories = annotations0['categories']
@@ -85,7 +85,7 @@ def plot_mistakes(model, device, test_loader, save_fn):
                     # Plot.
                     ax = axes[(len(mistakes)-1)//3, (len(mistakes)-1)%3]
                     ax.imshow(im_crop, cmap='gray')
-                    ax.set_title('Actual: {} Pred: {}'.format(all_categories[idx]['name'][target[i]], all_categories[idx]['name'][pred[i,0]]))
+                    ax.set_title('Actual: {} Pred: {}'.format(all_categories[target[i]]['name'], all_categories[pred[i,0]]['name']))
                     if len(mistakes) >= lim_mistakes:
                         plt.tight_layout()
                         plt.savefig(save_fn)
@@ -195,7 +195,7 @@ plt.yscale("symlog")
 plt.title("Error Rate vs. Number of Training Examples Per Class")
 plt.xlabel("Number of Training Examples For the Class")
 plt.ylabel("Error Rate")
-plt.legend(["Train", "Validation", "Validation (cis), Validation (trans)"])
+plt.legend(["Train", "Validation", "Validation (cis)", "Validation (trans)"])
 plt.tight_layout()
 plt.savefig("plots/error_v_num_ex_per_class.png")
 
@@ -216,4 +216,5 @@ train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_trai
 val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
 val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
 print('Train mistakes:', train_mistakes)
-print('Val mistakes:', val_mistakes)
+print('Val cis mistakes:', val_cis_mistakes)
+print('Val trans mistakes:', val_trans_mistakes)
