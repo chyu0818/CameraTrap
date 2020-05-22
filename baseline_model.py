@@ -83,7 +83,13 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
+# transform = T.Compose([T.Resize(size=(64,64)),
+#                        T.ToTensor(),
+#                        normalize])
+transform = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+                       T.RandomResizedCrop(size=(64,64),scale=(0.5, 1.0)),
+                       T.ToTensor(),
+                       normalize])
 
 train_path = 'X_train.npz'
 val_cis_path = 'X_val_cis.npz'
@@ -92,7 +98,7 @@ img_path = '../efs/train_crop'
 # img_path = '../efs/train'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = 1
+percent_data = 0.01
 # ~70k train, ~20k val
 
 print('Train Data')
