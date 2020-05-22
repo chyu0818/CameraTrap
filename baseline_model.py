@@ -83,10 +83,10 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
 # Not sure if Crop is required
-# transform = T.Compose([T.Resize(size=(64,64)),
-#                        T.ToTensor(),
-#                        normalize])
-transform = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+transform_val = T.Compose([T.Resize(size=(64,64)),
+                       T.ToTensor(),
+                       normalize])
+transform_train = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
                        T.RandomResizedCrop(size=(64,64),scale=(0.5, 1.0)),
                        T.ToTensor(),
                        normalize])
@@ -103,14 +103,14 @@ percent_data = 0.01
 
 print('Train Data')
 train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+                                  percent_data, transform=transform_train)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+                                  percent_data, transform=transform_val)
 
 print('\nVal Trans-Location Data')
 val_trans_dataset = CameraTrapCropDataset(img_path, val_trans_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+                                  percent_data, transform=transform_val)
 
 # print('Train Data')
 # train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
