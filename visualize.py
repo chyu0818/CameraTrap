@@ -73,6 +73,9 @@ def main():
     train_loss = np.load('train_loss1.npy')
     test_cis_loss = np.load('test_cis_loss1.npy')
     test_trans_loss = np.load('test_trans_loss1.npy')
+    print(train_loss)
+    print(test_cis_loss)
+    print(test_trans_loss)
     test_loss = num_val_cis_frac * test_cis_loss + num_val_trans_frac * test_trans_loss
     plot_train_test_loss_epoch(train_loss, test_loss, test_cis_loss, test_trans_loss, 20)
 

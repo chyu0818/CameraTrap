@@ -93,127 +93,133 @@ def plot_mistakes(model, device, test_loader, save_fn):
                         return mistakes
     return
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-kwargs = {'num_workers': 1, 'pin_memory': True} if device=='cuda' else {}
-model = models.resnet18(pretrained=True)
+def plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader):
+    print('Training set:')
+    train_err, train_total, train_loss = test(model, device, train_loader)
+    print('Validation set (cis):')
+    val_cis_err, val_cis_total, val_cis_loss = test(model, device, val_cis_loader)
+    print('Validation set (trans):')
+    val_trans_err, val_trans_total, val_trans_loss = test(model, device, val_trans_loader)
+    val_err = val_cis_err + val_trans_err
+    val_total = val_cis_total + val_trans_total
+    val_loss = num_val_cis_frac * val_cis_loss + num_val_trans_frac * val_trans_loss
+    print('Overall validation set loss:', val_loss)
 
-model.fc = torch.nn.Linear(512, NUM_CLASSES)
-model.to(device)
+    log_train_err = []
+    log_train_counts = []
+    for i in range(len(train_total)):
+        if train_total[i] != 0:
+            log_train_err.append(train_err[i] / train_total[i])
+            log_train_counts.append(train_total[i])
+    log_val_cis_err = []
+    log_val_cis_counts = []
+    log_val_trans_err = []
+    log_val_trans_counts = []
+    log_val_err = []
+    log_val_counts = []
+    for i in range(len(train_total)):
+        if train_total[i] != 0 and val_cis_total[i] != 0:
+            if val_cis_err[i] != 0:
+                log_val_cis_err.append(val_cis_err[i] / val_cis_total[i])
+            else:
+                log_val_cis_err.append(0)
+            log_val_cis_counts.append(train_total[i])
+        if train_total[i] != 0 and val_trans_total[i] != 0:
+            if val_trans_err[i] != 0:
+                log_val_trans_err.append(val_trans_err[i] / val_trans_total[i])
+            else:
+                log_val_trans_err.append(0)
+            log_val_trans_counts.append(train_total[i])
+        if train_total[i] != 0 and val_total[i] != 0:
+            if val_err[i] != 0:
+                log_val_err.append(val_err[i] / val_total[i])
+            else:
+                log_val_err.append(0)
+            log_val_counts.append(train_total[i])
 
-normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-#transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
-# Not sure if Crop is required
-transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
+    fig, ax = plt.subplots()
+    ax.plot(log_train_counts, log_train_err, color='r', marker='o', label='Train')
+    ax.plot(log_val_counts, log_val_err, color='b', marker='s', label='Validation')
+    ax.set(xlabel='Number of Training Examples For the Class', ylabel='Error Rate', 
+           xscale='symlog', yscale='symlog', 
+           title='Error Rate vs. Number of Training Examples Per Class')
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig('plots/error_v_num_ex_per_class_general.png')
 
-train_path = 'X_train.npz'
-val_cis_path = 'X_val_cis.npz'
-val_trans_path = 'X_val_trans.npz'
-img_path = '../efs/train_crop'
-ann_path = '../efs/iwildcam2020_train_annotations.json'
-bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-model_path = "baseline1_4.pt"
-percent_data = 1
-# ~70k train, ~20k val
+    fig, ax = plt.subplots()
+    ax.plot(log_val_cis_counts, log_val_cis_err, color='g', marker='v', label='Validation (Cis)')
+    ax.plot(log_val_trans_counts, log_val_trans_err, color='c', marker='x', label='Validation (Trans)')
+    ax.set(xlabel='Number of Training Examples For the Class', ylabel='Error Rate', 
+           xscale='symlog', yscale='symlog', 
+           title='Error Rate vs. Number of Training Examples Per Class')
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig('plots/error_v_num_ex_per_class.png')
+    return
 
-print('Train Data')
-train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
-print('\nVal Data (cis)')
-val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+def main():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    kwargs = {'num_workers': 1, 'pin_memory': True} if device=='cuda' else {}
+    model = models.resnet18(pretrained=True)
 
-print('\nVal Data (trans)')
-val_trans_dataset = CameraTrapCropDataset(img_path, val_trans_path, ann_path, bbox_path,
-                                  percent_data, transform=transform)
+    model.fc = torch.nn.Linear(512, NUM_CLASSES)
+    model.to(device)
 
-train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True, **kwargs
-)
-val_cis_loader = torch.utils.data.DataLoader(
-        val_cis_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
-)
-val_trans_loader = torch.utils.data.DataLoader(
-        val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
-)
+    normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+    #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
+    # Not sure if Crop is required
+    transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
 
-num_val_cis = 3307
-num_val_trans = 6382
-num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
-num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
+    train_path = 'X_train.npz'
+    val_cis_path = 'X_val_cis.npz'
+    val_trans_path = 'X_val_trans.npz'
+    img_path = '../efs/train_crop'
+    ann_path = '../efs/iwildcam2020_train_annotations.json'
+    bbox_path = '../efs/iwildcam2020_megadetector_results.json'
+    model_path = "baseline1_4.pt"
+    percent_data = 1
+    # ~70k train, ~20k val
 
-model.load_state_dict(torch.load(model_path))
-# print('Training set:')
-# train_err, train_total, train_loss = test(model, device, train_loader)
-# print('Validation set (cis):')
-# val_cis_err, val_cis_total, val_cis_loss = test(model, device, val_cis_loader)
-# print('Validation set (trans):')
-# val_trans_err, val_trans_total, val_trans_loss = test(model, device, val_trans_loader)
-# val_err = val_cis_err + val_trans_err
-# val_total = val_cis_total + val_trans_total
-# val_loss = num_val_cis_frac * val_cis_loss + num_val_trans_frac * val_trans_loss
-# print('Overall validation set loss:', val_loss)
-#
-# log_train_err = []
-# log_train_counts = []
-# for i in range(len(train_total)):
-#     if train_total[i] != 0:
-#         log_train_err.append(train_err[i] / train_total[i])
-#         log_train_counts.append(train_total[i])
-# log_val_cis_err = []
-# log_val_cis_counts = []
-# log_val_trans_err = []
-# log_val_trans_counts = []
-# log_val_err = []
-# log_val_counts = []
-# for i in range(len(train_total)):
-#     if train_total[i] != 0 and val_cis_total[i] != 0:
-#         if val_cis_err[i] != 0:
-#             log_val_cis_err.append(val_cis_err[i] / val_cis_total[i])
-#         else:
-#             log_val_cis_err.append(0)
-#         log_val_cis_counts.append(train_total[i])
-#     if train_total[i] != 0 and val_trans_total[i] != 0:
-#         if val_trans_err[i] != 0:
-#             log_val_trans_err.append(val_trans_err[i] / val_trans_total[i])
-#         else:
-#             log_val_trans_err.append(0)
-#         log_val_trans_counts.append(train_total[i])
-#     if train_total[i] != 0 and val_total[i] != 0:
-#         if val_err[i] != 0:
-#             log_val_err.append(val_err[i] / val_total[i])
-#         else:
-#             log_val_err.append(0)
-#         log_val_counts.append(train_total[i])
-#
-# plt.plot(log_train_counts, log_train_err, 's', marker="o")
-# plt.plot(log_val_counts, log_val_err, 's', marker="s")
-#
-# plt.xscale("symlog")
-# plt.yscale("symlog")
-# plt.title("Error Rate vs. Number of Training Examples Per Class")
-# plt.xlabel("Number of Training Examples For the Class")
-# plt.ylabel("Error Rate")
-# plt.legend(["Train", "Validation"])
-# plt.tight_layout()
-# plt.savefig("plots/error_v_num_ex_per_class_general.png")
-#
-# plt.plot(log_val_cis_counts, log_val_cis_err, 's', marker="v")
-# plt.plot(log_val_trans_counts, log_val_trans_err, 's', marker="x")
-#
-# plt.xscale("symlog")
-# plt.yscale("symlog")
-# plt.title("Error Rate vs. Number of Training Examples Per Class")
-# plt.xlabel("Number of Training Examples For the Class")
-# plt.ylabel("Error Rate")
-# plt.legend(["Train", "Validation", "Validation (cis)", "Validation (trans)"])
-# plt.tight_layout()
-# plt.savefig("plots/error_v_num_ex_per_class.png")
+    print('Train Data')
+    train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
+                                      percent_data, transform=transform)
+    print('\nVal Data (cis)')
+    val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
+                                      percent_data, transform=transform)
 
-# Plot 9 mistakes.
-train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
-val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
-print('Train mistakes:', train_mistakes)
-print('Val cis mistakes:', val_cis_mistakes)
-print('Val trans mistakes:', val_trans_mistakes)
+    print('\nVal Data (trans)')
+    val_trans_dataset = CameraTrapCropDataset(img_path, val_trans_path, ann_path, bbox_path,
+                                      percent_data, transform=transform)
+
+    train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=BATCH_SIZE_TRAIN, shuffle=True, **kwargs
+    )
+    val_cis_loader = torch.utils.data.DataLoader(
+            val_cis_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
+    )
+    val_trans_loader = torch.utils.data.DataLoader(
+            val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
+    )
+
+    num_val_cis = 3307
+    num_val_trans = 6382
+    num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
+    num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
+
+    model.load_state_dict(torch.load(model_path))
+
+    # Plot error rate by number of examples in class.
+    plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
+
+    # Plot 9 mistakes.
+    train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
+    val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
+    val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
+    print('Train mistakes:', train_mistakes)
+    print('Val cis mistakes:', val_cis_mistakes)
+    print('Val trans mistakes:', val_trans_mistakes)
+
+if __name__ == '__main__':
+    main()
