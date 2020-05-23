@@ -17,6 +17,7 @@ BATCH_SIZE_VAL = 1000
 LOG_INTERVAL = 20
 NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
+np.random.seed(1)
 def train(model, device, train_loader, optimizer, epoch):
     '''
     This is your training function. When you call this function, the model is
@@ -103,14 +104,14 @@ percent_data = 1
 
 print('Train Data')
 train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_train)
+                                  percent_data, transform=transform_train, seed=1)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val)
+                                  percent_data, transform=transform_val, seed=1)
 
 print('\nVal Trans-Location Data')
 val_trans_dataset = CameraTrapCropDataset(img_path, val_trans_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val)
+                                  percent_data, transform=transform_val, seed=1)
 
 # print('Train Data')
 # train_dataset = CameraTrapDataset(img_path, train_path, ann_path, bbox_path,
