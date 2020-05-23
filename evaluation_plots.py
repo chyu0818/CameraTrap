@@ -14,11 +14,15 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import os
 
-BATCH_SIZE_TRAIN = 1000
-BATCH_SIZE_VAL = 1000
+BATCH_SIZE_TRAIN = 512
+BATCH_SIZE_VAL = 512
 LOG_INTERVAL = 10
 NUM_CLASSES = 267 # 267??
 NUM_EPOCHS = 20
+NUM_VAL_CIS = 3307
+NUM_VAL_TRANS = 6382
+NUM_VAL_CIS_FRAC = NUM_VAL_CIS / (NUM_VAL_CIS + NUM_VAL_TRANS)
+NUM_VAL_TRANS_FRAC = NUM_VAL_TRANS/ (NUM_VAL_CIS + NUM_VAL_TRANS)
 
 def test(model, device, test_loader):
     criterion = nn.CrossEntropyLoss(reduction='sum')
@@ -102,7 +106,7 @@ def plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader,
     val_trans_err, val_trans_total, val_trans_loss = test(model, device, val_trans_loader)
     val_err = val_cis_err + val_trans_err
     val_total = val_cis_total + val_trans_total
-    val_loss = num_val_cis_frac * val_cis_loss + num_val_trans_frac * val_trans_loss
+    val_loss = NUM_VAL_CIS_FRAC * val_cis_loss + NUM_VAL_TRANS_FRAC * val_trans_loss
     print('Overall validation set loss:', val_loss)
 
     log_train_err = []
@@ -178,7 +182,7 @@ def main():
     img_path = '../efs/train_crop'
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-    model_path = "baseline1_4.pt"
+    model_path = "models/8_64_512_xaug/baseline1_8.pt"
     percent_data = 1
     # ~70k train, ~20k val
 
@@ -202,11 +206,6 @@ def main():
     val_trans_loader = torch.utils.data.DataLoader(
             val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
     )
-
-    num_val_cis = 3307
-    num_val_trans = 6382
-    num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
-    num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
 
     model.load_state_dict(torch.load(model_path))
 
