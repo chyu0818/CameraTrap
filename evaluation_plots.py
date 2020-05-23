@@ -142,8 +142,8 @@ def plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader,
             log_val_counts.append(train_total[i])
 
     fig, ax = plt.subplots()
-    ax.plot(log_train_counts, log_train_err, color='r', marker='o', label='Train')
-    ax.plot(log_val_counts, log_val_err, color='b', marker='s', label='Validation')
+    ax.plot(log_train_counts, log_train_err, color='r', marker='o', label='Train', linestyle='None')
+    ax.plot(log_val_counts, log_val_err, color='b', marker='s', label='Validation', linestyle='None')
     ax.set(xlabel='Number of Training Examples For the Class', ylabel='Error Rate', 
            xscale='symlog', yscale='symlog', 
            title='Error Rate vs. Number of Training Examples Per Class')
@@ -152,8 +152,8 @@ def plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader,
     plt.savefig('plots/error_v_num_ex_per_class_general.png')
 
     fig, ax = plt.subplots()
-    ax.plot(log_val_cis_counts, log_val_cis_err, color='g', marker='v', label='Validation (Cis)')
-    ax.plot(log_val_trans_counts, log_val_trans_err, color='c', marker='x', label='Validation (Trans)')
+    ax.plot(log_val_cis_counts, log_val_cis_err, color='g', marker='v', label='Validation (Cis)', linestyle='None')
+    ax.plot(log_val_trans_counts, log_val_trans_err, color='c', marker='x', label='Validation (Trans)', linestyle='None')
     ax.set(xlabel='Number of Training Examples For the Class', ylabel='Error Rate', 
            xscale='symlog', yscale='symlog', 
            title='Error Rate vs. Number of Training Examples Per Class')
