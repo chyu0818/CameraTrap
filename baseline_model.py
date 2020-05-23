@@ -87,8 +87,8 @@ normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
 transform_val = T.Compose([T.Resize(size=(64,64)),
                        T.ToTensor(),
                        normalize])
-transform_train = T.Compose([T.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
-                       T.RandomResizedCrop(size=(64,64),scale=(0.5, 1.0)),
+transform_train = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+                       T.RandomResizedCrop(size=(64,64),scale=(0.8, 1.0)),
                        T.ToTensor(),
                        normalize])
 
