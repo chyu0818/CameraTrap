@@ -155,7 +155,7 @@ class CameraTrapCropTripletDataset(Dataset):
     def __getitem__(self, idx):
         if self.train:
             # Anchor
-            id1, target1 = self.id_lst[idx], self.target_lst[idx].item()
+            id1, target1 = self.id_lst[idx], self.target_lst[idx]
 
             # Positive
             positive_index = idx
