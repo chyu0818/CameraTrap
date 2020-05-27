@@ -81,8 +81,8 @@ val_trans_loader = torch.utils.data.DataLoader(
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {} #!!
 embedding_net = models.resnet18(pretrained=True)
 # Fix everything but final layer to try first
-for param in embedding_net.parameters():
-    param.requires_grad = False
+# for param in embedding_net.parameters():
+#     param.requires_grad = False
 embedding_net.fc = torch.nn.Linear(512, 1000)
 
 model = TripletNet(embedding_net)
