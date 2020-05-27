@@ -20,7 +20,7 @@ BATCH_SIZE_TRAIN = 1000
 BATCH_SIZE_VAL = 1000
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
-NUM_EPOCHS = 20
+NUM_EPOCHS = 1
 np.random.seed(1)
 
 def extract_embeddings(dataloader, model):
