@@ -176,7 +176,7 @@ class CameraTrapCropTripletDataset(Dataset):
         im1 = self.transform(Image.open(os.path.join(self.im_fp,'{}.jpg'.format(id1))))
         im2 = self.transform(Image.open(os.path.join(self.im_fp,'{}.jpg'.format(id2))))
         im3 = self.transform(Image.open(os.path.join(self.im_fp,'{}.jpg'.format(id3))))
-        return {'anchor':im1, 'pos':im2, 'neg':im3}
+        return (im1, im2, im3), []
 
 
 class CameraTrapCropDataset(Dataset):
