@@ -114,8 +114,8 @@ class CameraTrapCropTripletDataset(Dataset):
         assert(len(self.id_lst) == len(self.target_lst))
         assert(len(self.id_lst) == len(self.conf))
 
-        self.targets_set = set(self.target_lst.numpy())
-        self.target_to_indices = {target: np.where(self.target_lst.numpy() == target)[0]
+        self.targets_set = set(np.asarray(self.target_lst))
+        self.target_to_indices = {target: np.where(np.asarray(self.target_lst) == np.asarray(target))[0]
                                      for target in self.targets_set}
 
         # For testing, use fixed triplets. 
