@@ -55,6 +55,7 @@ img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 percent_data = .01
+kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {} 
 
 print('Train Data')
 train_dataset = CameraTrapCropTripletDataset(img_path, train_path, ann_path, bbox_path,
@@ -78,7 +79,6 @@ val_trans_loader = torch.utils.data.DataLoader(
         val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
 )
 
-kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {} #!!
 embedding_net = models.resnet18(pretrained=True)
 # Fix everything but final layer to try first
 # for param in embedding_net.parameters():
