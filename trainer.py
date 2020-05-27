@@ -18,8 +18,6 @@ def fit(train_loader, val_cis_loader, val_trans_loader, model, loss_fn, optimize
     val_trans_losses = []
     start = time.time()
     for epoch in range(1, n_epochs+1):
-        scheduler.step()
-
         # Train stage
         train_loss, metrics = train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, metrics)
 
@@ -46,6 +44,7 @@ def fit(train_loader, val_cis_loader, val_trans_loader, model, loss_fn, optimize
         train_losses.append(train_loss)
         val_cis_losses.append(val_cis_loss)
         val_trans_losses.append(val_trans_loss)
+        scheduler.step()
         torch.save(model.state_dict(), "triplet_fixed_resnet_{}.pt".format(epoch))
 
         print(message)
