@@ -16,7 +16,7 @@ from data_reader import CameraTrapCropTripletDataset
 from triplet_loss import TripletNet, TripletLoss
 
 cuda = torch.cuda.is_available()
-BATCH_SIZE_TRAIN = 50
+BATCH_SIZE_TRAIN = 1
 BATCH_SIZE_VAL = 50
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
@@ -59,7 +59,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
 print('Train Data')
 train_dataset = CameraTrapCropTripletDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_train, seed=1)
+                                  .0001, transform=transform_train, seed=1)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropTripletDataset(img_path, val_cis_path, ann_path, bbox_path,
                                   percent_data, transform=transform_val, seed=1)
@@ -96,6 +96,7 @@ step = 1
 gamma = 0.7
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step, gamma=gamma)
 
+print('fit')
 fit(train_loader, val_cis_loader, val_trans_loader, model, loss_fn, optimizer, scheduler, NUM_EPOCHS, cuda, LOG_INTERVAL)
 
 
