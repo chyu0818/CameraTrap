@@ -117,6 +117,26 @@ class CameraTrapCropTripletDataset(Dataset):
         self.targets_set = set(np.asarray(self.target_lst))
         self.target_to_indices = {target: np.where(np.asarray(self.target_lst) == np.asarray(target))[0]
                                      for target in self.targets_set}
+        # Ignore classes with only 1 image. 
+        inds_remove = []
+        for target in target_to_indices:
+            if len(target_to_indices[target]) == 1:
+                inds_remove.append(target_to_indices[target][0])
+                target_to_indices[target] = []
+
+        # Sort indices backwards.
+        inds_remove.sort(reverse=True)
+        print('Number of removed images:', len(inds_remove))
+        print(inds_remove)
+        for ind in inds_remove:
+            self.target_lst.pop(ind)
+            self.id_lst.pop(ind)
+            self.conf.pop(ind)
+
+        # Shouldn't need to but just in case calculate again
+        self.targets_set = set(np.asarray(self.target_lst))
+        self.target_to_indices = {target: np.where(np.asarray(self.target_lst) == np.asarray(target))[0]
+                                     for target in self.targets_set}
 
         # For testing, use fixed triplets. 
         if not self.train:
