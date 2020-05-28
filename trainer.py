@@ -64,28 +64,30 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
     model.train()
     losses = []
     total_loss = 0
-    target = None # temp
 
     print('train')
     print(train_loader)
-    for batch_idx, data in enumerate(train_loader):
-        print('hi')
+    for batch_idx, (data, target) in enumerate(train_loader):
         print(batch_idx)
-        anchor = data['anchor']
-        pos = data['positive']
-        neg = data['negative']
+        target = target if len(target) > 0 else None
+        if not type(data) in (tuple, list):
+            data = (data,)
         if cuda:
-            anchor = data['anchor'].cuda()
-            pos = data['positive'].cuda()
-            neg = data['negative'].cuda()
+            data = tuple(d.cuda() for d in data)
+            if target is not None:
+                target = target.cuda()
+
 
         optimizer.zero_grad()
-        outputs = model(anchor, pos, neg)
+        outputs = model(*data)
 
         if type(outputs) not in (tuple, list):
             outputs = (outputs,)
 
         loss_inputs = outputs
+        if target is not None:
+            target = (target,)
+            loss_inputs += target
 
         loss_outputs = loss_fn(*loss_inputs)
         loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
@@ -117,21 +119,23 @@ def test_epoch(val_loader, model, loss_fn, cuda, metrics):
             metric.reset()
         model.eval()
         val_loss = 0
-        target = None # temp
-        for batch_idx, data in enumerate(val_loader):
-            anchor = data['anchor']
-            pos = data['positive']
-            neg = data['negative']
+        for batch_idx, (data, target) in enumerate(val_loader):
+            target = target if len(target) > 0 else None
+            if not type(data) in (tuple, list):
+                data = (data,)
             if cuda:
-                anchor = data['anchor'].cuda()
-                pos = data['positive'].cuda()
-                neg = data['negative'].cuda()
+                data = tuple(d.cuda() for d in data)
+                if target is not None:
+                    target = target.cuda()
 
-            outputs = model(anchor, pos, neg)
+            outputs = model(*data)
 
             if type(outputs) not in (tuple, list):
                 outputs = (outputs,)
             loss_inputs = outputs
+            if target is not None:
+                target = (target,)
+                loss_inputs += target
 
             loss_outputs = loss_fn(*loss_inputs)
             loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
