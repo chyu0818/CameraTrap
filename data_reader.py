@@ -133,7 +133,6 @@ class CameraTrapCropTripletDataset(Dataset):
             self.id_lst.pop(ind)
             self.conf.pop(ind)
 
-        # Shouldn't need to but just in case calculate again
         self.targets_set = set(np.asarray(self.target_lst))
         self.target_to_indices = {target: np.where(np.asarray(self.target_lst) == np.asarray(target))[0]
                                      for target in self.targets_set}

@@ -16,27 +16,12 @@ from data_reader import CameraTrapCropTripletDataset
 from triplet_loss import TripletNet, TripletLoss
 
 cuda = torch.cuda.is_available()
-BATCH_SIZE_TRAIN = 1
-BATCH_SIZE_VAL = 50
+BATCH_SIZE_TRAIN = 512
+BATCH_SIZE_VAL = 512
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
-NUM_EPOCHS = 1
+NUM_EPOCHS = 20
 np.random.seed(1)
-
-def extract_embeddings(dataloader, model):
-    with torch.no_grad():
-        model.eval()
-        embeddings = np.zeros((len(dataloader.dataset), 2))
-        labels = np.zeros(len(dataloader.dataset))
-        k = 0
-        for images, target in dataloader:
-            if cuda:
-                images = images.cuda()
-            embeddings[k:k+len(images)] = model.get_embedding(images).data.cpu().numpy()
-            labels[k:k+len(images)] = target.numpy()
-            k += len(images)
-    return embeddings, labels
-
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225])
@@ -59,14 +44,14 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
 print('Train Data')
 train_dataset = CameraTrapCropTripletDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_train, seed=1)
+                                  percent_data, transform=transform_train, train=True, seed=1)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropTripletDataset(img_path, val_cis_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val, seed=1)
+                                  percent_data, transform=transform_val, train=False, seed=1)
 
 print('\nVal Trans-Location Data')
 val_trans_dataset = CameraTrapCropTripletDataset(img_path, val_trans_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val, seed=1)
+                                  percent_data, transform=transform_val, train=False, seed=1)
 
 
 train_loader = torch.utils.data.DataLoader(
@@ -96,7 +81,6 @@ step = 1
 gamma = 0.7
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step, gamma=gamma)
 
-print('fit')
 fit(train_loader, val_cis_loader, val_trans_loader, model, loss_fn, optimizer, scheduler, NUM_EPOCHS, cuda, LOG_INTERVAL)
 
 
