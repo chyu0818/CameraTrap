@@ -59,7 +59,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
 print('Train Data')
 train_dataset = CameraTrapCropTripletDataset(img_path, train_path, ann_path, bbox_path,
-                                  .0001, transform=transform_train, seed=1)
+                                  percent_data, transform=transform_train, seed=1)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropTripletDataset(img_path, val_cis_path, ann_path, bbox_path,
                                   percent_data, transform=transform_val, seed=1)
