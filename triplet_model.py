@@ -39,7 +39,7 @@ val_trans_path = 'X_val_trans.npz'
 img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = .01
+percent_data = 1
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {} 
 
 print('Train Data')
