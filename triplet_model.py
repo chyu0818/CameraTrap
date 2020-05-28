@@ -65,7 +65,6 @@ val_trans_loader = torch.utils.data.DataLoader(
 )
 
 embedding_net = models.resnet18(pretrained=True)
-# Fix everything but final layer to try first
 # for param in embedding_net.parameters():
 #     param.requires_grad = False
 embedding_net.fc = torch.nn.Linear(512, 1000)
