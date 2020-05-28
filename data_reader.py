@@ -119,10 +119,10 @@ class CameraTrapCropTripletDataset(Dataset):
                                      for target in self.targets_set}
         # Ignore classes with only 1 image. 
         inds_remove = []
-        for target in target_to_indices:
-            if len(target_to_indices[target]) == 1:
-                inds_remove.append(target_to_indices[target][0])
-                target_to_indices[target] = []
+        for tar in self.target_to_indices:
+            if len(self.target_to_indices[tar]) == 1:
+                inds_remove.append(self.target_to_indices[tar][0])
+                self.target_to_indices[tar] = []
 
         # Sort indices backwards.
         inds_remove.sort(reverse=True)
