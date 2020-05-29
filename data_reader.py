@@ -12,7 +12,7 @@ class CameraTrapCropTripletDataset(Dataset):
     Train: For each sample (anchor) randomly chooses a positive and negative samples, will change later for location specific etc
     Test: Creates fixed triplets for testing
     """
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, train=True, seed=1, transform=None):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, train=True, transform=None):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images
@@ -25,7 +25,6 @@ class CameraTrapCropTripletDataset(Dataset):
         self.conf = []   # List of confidence values.
         self.transform = transform
         self.train = train
-        np.random.seed(seed)
 
         # Load files.
         file_lst = np.load(file_lst_fn)['arr_0']
@@ -199,7 +198,7 @@ class CameraTrapCropTripletDataset(Dataset):
 
 
 class CameraTrapCropDataset(Dataset):
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, transform=None):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images
@@ -211,7 +210,6 @@ class CameraTrapCropDataset(Dataset):
         self.id_lst = []   # List of image ids corresponding to each bounding box.
         self.conf = []   # List of confidence values.
         self.transform = transform
-        np.random.seed(seed)
 
         # Randomize files.
         file_lst = np.load(file_lst_fn)['arr_0']
@@ -327,7 +325,7 @@ class CameraTrapCropDataset(Dataset):
 
 
 class CameraTrapDataset(Dataset):
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, seed=1, transform=None):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, transform=None):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images
@@ -339,7 +337,6 @@ class CameraTrapDataset(Dataset):
         self.id_lst = []   # List of image ids corresponding to each bounding box.
         self.conf = []   # List of confidence values.
         self.transform = transform
-        np.random.seed(seed)
 
         # Randomize files.
         file_lst = np.load(file_lst_fn)['arr_0']

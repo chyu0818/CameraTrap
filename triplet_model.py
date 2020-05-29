@@ -44,14 +44,14 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
 print('Train Data')
 train_dataset = CameraTrapCropTripletDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_train, train=True, seed=1)
+                                  percent_data, transform=transform_train, train=True)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropTripletDataset(img_path, val_cis_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val, train=False, seed=1)
+                                  percent_data, transform=transform_val, train=False)
 
 print('\nVal Trans-Location Data')
 val_trans_dataset = CameraTrapCropTripletDataset(img_path, val_trans_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val, train=False, seed=1)
+                                  percent_data, transform=transform_val, train=False)
 
 
 train_loader = torch.utils.data.DataLoader(

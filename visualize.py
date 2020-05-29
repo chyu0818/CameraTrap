@@ -70,9 +70,9 @@ def main():
     num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
     num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
 
-    train_loss = np.load('train_loss1.npy')
-    test_cis_loss = np.load('test_cis_loss1.npy')
-    test_trans_loss = np.load('test_trans_loss1.npy')
+    train_loss = np.load('train_loss.npy')
+    test_cis_loss = np.load('test_cis_loss.npy')
+    test_trans_loss = np.load('test_trans_loss.npy')
     print(train_loss)
     print(test_cis_loss)
     print(test_trans_loss)
