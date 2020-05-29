@@ -40,37 +40,27 @@ def train(model, device, train_loader, optimizer, epoch):
     return np.mean(losses)
 
 
-def test(model, device, test_loader):
-    criterion = nn.CrossEntropyLoss(reduction='sum')
+def get_preds(model, device, test_loader):
     model.eval()    # Set the model to inference mode
-    test_loss = 0
-    correct = 0
-    total = 0
+    predictions = []
+    labels = []
     with torch.no_grad():   # For the inference step, gradient is not computed
         for data0 in test_loader:
             data = data0['image']
             target = data0['target']
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += criterion(output, target).item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-            correct += pred.eq(target.view_as(pred)).sum().item()
-            total += len(target)
+            predictions.extend(output)
+            labels.extend(target)
 
-    test_loss /= total
-
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, total,
-        100. * correct / total))
-    return test_loss
 
 cuda = torch.cuda.is_available()
 BATCH_SIZE_TRAIN = 512
 BATCH_SIZE_VAL = 512
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
-NUM_EPOCHS = 1
-np.random.seed(1)
+NUM_EPOCHS = 20
+#np.random.seed(1)
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225])
@@ -94,7 +84,7 @@ weights_path = "models/10_64_512_triplet_aug/triplet_finetune_resnet_10.pt"
 
 print('Train Data')
 train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_train)
+                                  percent_data, transform=transform_val)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropDataset(img_path, val_cis_path, ann_path, bbox_path,
                                   percent_data, transform=transform_val)
@@ -125,42 +115,8 @@ model.load_state_dict(torch.load(weights_path))
 for param in model.parameters():
     param.requires_grad = False
 
-model = nn.Sequential(model, nn.Linear(1000, 512), nn.Linear(512, 256), nn.Linear(256, NUM_CLASSES))
 
 device = "cuda"
 model.to(device)
 
-lr = 1
-optimizer = optim.Adadelta(model.parameters(), lr=lr)
-step = 1
-gamma = 0.7
-scheduler = lr_scheduler.StepLR(optimizer, step_size=step, gamma=gamma)
-
-# Training loop
-train_losses = []
-test_cis_losses = []
-test_trans_losses = []
-start = time.time()
-for epoch in range(1, NUM_EPOCHS + 1):
-    train_loss = train(model, device, train_loader, optimizer, epoch)
-    test_cis_loss = test(model, device, val_cis_loader)
-    test_trans_loss = test(model, device, val_trans_loader)
-    train_losses.append(train_loss)
-    test_cis_losses.append(test_cis_loss)
-    test_trans_losses.append(test_trans_loss)
-    scheduler.step()    # learning rate scheduler
-    torch.save(model.state_dict(), "triplet_classifier_aug_{}_{}.pt".format(percent_data,epoch))
-print('Train Time:', time.time()-start)
-# You may optionally save your model at each epoch here
-np.save("train_triplet_classifier_aug_loss{}.npy".format(percent_data), np.array(train_losses))
-np.save("test_triplet_classifier_aug_cis_loss{}.npy".format(percent_data), np.array(test_cis_losses))
-np.save("test_triplet_classifier_aug_trans_loss{}.npy".format(percent_data), np.array(test_trans_losses))
-
-print("\nFinal Performance!")
-print("Validation Set (cis):")
-test(model, device, val_cis_loader)
-print("Validation Set (trans):")
-test(model, device, val_trans_loader)
-print("Training Set:")
-test(model, device, train_loader)
 
