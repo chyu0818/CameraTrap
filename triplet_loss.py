@@ -16,6 +16,25 @@ class TripletNet(nn.Module):
     def get_embedding(self, x):
         return self.embedding_net(x)
 
+class Classifier(nn.Module):
+    def __init__(self, embedding_net):
+        super(Classifier, self).__init__()
+        self.embedding_net = embedding_net
+        #self.fc1 = nn.Linear(1000, 512)
+        #self.fc2 = nn.Linear(512, 256)
+        #self.fc3 = nn.Linear(256, 267)
+    
+    def forward(self, x):
+        x = self.embedding_net(x)
+        #x = self.fc1(x)
+        #x = F.relu(x)
+        #x = self.fc2(x)
+        #x = F.relu(x)
+        #x = self.fc3(x)
+        return x
+        
+        
+
         
 class TripletLoss(nn.Module):
     """
