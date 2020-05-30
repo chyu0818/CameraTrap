@@ -460,3 +460,14 @@ class CameraTrapDataset(Dataset):
 
     def __getitem__(self, idx):
         return {'image':self.im_lst[idx], 'target':self.target_lst[idx], 'id':self.id_lst[idx]}
+
+class CameraTrapEmbeddingDataset(Dataset):
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
+    
+    def __len__(self):
+        return len(self.y)
+    
+    def __getitem__(self, idx):
+        return {'embedding': self.X[idx], 'target': self.y[idx]}
