@@ -12,7 +12,7 @@ class CameraTrapCropTripletDataset(Dataset):
     Train: For each sample (anchor) randomly chooses a positive and negative samples, will change later for location specific etc
     Test: Creates fixed triplets for testing
     """
-    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, train=True, transform=None):
+    def __init__(self, im_fp, file_lst_fn, annotations_fn, bbox_fn, percent_data, conf_threshold, train=True, transform=None):
         '''
         im_fp: filepath for images
         file_lst_fn: filename for list of images
@@ -51,6 +51,7 @@ class CameraTrapCropTripletDataset(Dataset):
         no_detections_count = 0
         no_category_id_count = 0
         nonexistent_category_count = 0
+        skipped_conf = 0
         for f in file_lst:
             # Get detections and category id from dictionary.
             if im_dict[f].get('detections') == None:
@@ -80,26 +81,28 @@ class CameraTrapCropTripletDataset(Dataset):
                 d = detect[i]
                 category = d['category']
                 conf = d['conf']
-
-                # Check if category is human. (also 75)
-                if category == '2' and category_id != HUMAN_CATEGORY_ID and category_id != 0:
-                    #print('random human', category_id)
-                    self.target_lst.append(categories_dict[HUMAN_CATEGORY_ID])
-                    # ID: filename, index in detections, and bounding box coordinates
-                    idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
-                    self.id_lst.append(idd)
-                    self.conf.append(conf)
-                # If animal or actual human or empty
-                elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
-                    if categories_dict.get(category_id) != None:
-                        self.target_lst.append(categories_dict[category_id])
+                if conf >= conf_threshold:
+                    # Check if category is human. (also 75)
+                    if category == '2' and category_id != HUMAN_CATEGORY_ID and category_id != 0:
+                        #print('random human', category_id)
+                        self.target_lst.append(categories_dict[HUMAN_CATEGORY_ID])
+                        # ID: filename, index in detections, and bounding box coordinates
                         idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
                         self.id_lst.append(idd)
                         self.conf.append(conf)
+                    # If animal or actual human or empty
+                    elif category == '1' or category_id == HUMAN_CATEGORY_ID or category_id == 0:
+                        if categories_dict.get(category_id) != None:
+                            self.target_lst.append(categories_dict[category_id])
+                            idd = '{}_{}_{}'.format(f, i, '-'.join([str(dd) for dd in d['bbox']]))
+                            self.id_lst.append(idd)
+                            self.conf.append(conf)
+                        else:
+                            nonexistent_category_count += 1
                     else:
-                        nonexistent_category_count += 1
+                        print('ERROR: Only categories 1/2:', category)
                 else:
-                    print('ERROR: Only categories 1/2:', category)
+                    skipped_conf += 1
 
         print('\nNumber of empty images with no bounding boxes:', empty_count)
         print('Number of empty images with bounding boxes:', empty_w_bbox_count)
@@ -108,6 +111,8 @@ class CameraTrapCropTripletDataset(Dataset):
         print('\nNumber of images without detections (even []) listed:', no_detections_count)
         print('Number of images without categories:', no_category_id_count)
         print('Number of categories that do not exist:', nonexistent_category_count)
+
+        print('Number of cropped images skipped because of confidence:', skipped_conf)
 
         print('\nFinal number of cropped images:', len(self.id_lst), '\n')
         assert(len(self.id_lst) == len(self.target_lst))

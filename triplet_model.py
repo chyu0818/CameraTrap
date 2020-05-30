@@ -25,11 +25,11 @@ np.random.seed(1)
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225])
-transform_val = T.Compose([T.Resize(size=(64,64)),
+transform_val = T.Compose([T.Resize(size=(256,256)),
                        T.ToTensor(),
                        normalize])
 transform_train = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-                       T.RandomResizedCrop(size=(64,64),scale=(0.8, 1.0)),
+                       T.RandomResizedCrop(size=(256,256),scale=(0.8, 1.0)),
                        T.ToTensor(),
                        normalize])
 
@@ -44,14 +44,14 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
 print('Train Data')
 train_dataset = CameraTrapCropTripletDataset(img_path, train_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_train, train=True)
+                                  percent_data, conf_threshold=0.5, transform=transform_train, train=True)
 print('\nVal Cis-Location Data')
 val_cis_dataset = CameraTrapCropTripletDataset(img_path, val_cis_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val, train=False)
+                                  percent_data, conf_threshold=0.5, transform=transform_val, train=False)
 
 print('\nVal Trans-Location Data')
 val_trans_dataset = CameraTrapCropTripletDataset(img_path, val_trans_path, ann_path, bbox_path,
-                                  percent_data, transform=transform_val, train=False)
+                                  percent_data, conf_threshold=0.5, transform=transform_val, train=False)
 
 
 train_loader = torch.utils.data.DataLoader(

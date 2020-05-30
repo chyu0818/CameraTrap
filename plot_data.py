@@ -91,18 +91,81 @@ def plot_locations(data, category_data, annotations):
     return
 
 
+def create_im_dict(annotations, detections):
+    # Create dictionary with the key as image id and the values as
+    # the bounding boxes and category id.
+    # detections is a list of dictionaries {category 1/2, bbox, confidence}
+    im_dict = {a['image_id']:{'category_id':a['category_id']} for a in annotations}
+    for im in im_dict:
+        im_dict[im]['detections'] = []
 
+    # Iterate over bounding boxes info.
+    for detect in detections:
+        if im_dict.get(detect['id']) != None:
+            # if im_dict[detect['id']].get('detections') != None:
+            #     print('ERROR: More than one detection')
+            im_dict[detect['id']]['detections'] = detect['detections']
+    return im_dict
 
+def plot_detect_conf(detections, title):
+    print(title)
+    print(len(detections))
+    print(len(np.argwhere(np.asarray(detections) >= 0.4)), '\n')
+    # plt.hist(detections, bins=10)
+    # plt.xlabel('Confidence')
+    # plt.title('Number of Detections with Confidence Score ({})'.format(title))
+    # plt.show()
 
+def extract_detections(im_dict, file_lst):
+    detections = []
+    for im in file_lst:
+        for d in im_dict[im]['detections']:
+            detections.append(d['conf'])
+    return detections
 
-def plot_time(data):
-    pass
+def plot_detect_conf_all(annotations, detections):
+    # Both train and test
+    im_dict = create_im_dict(annotations['annotations'], detections)
+    detections_all = [d['conf'] for im in im_dict for d in im_dict[im]['detections']]
+    detections_all.sort(reverse=True)
+    plot_detect_conf(detections_all, 'all')
+
+    # Our train
+    file_lst = np.load('X_train.npz')['arr_0']
+    detections = extract_detections(im_dict, file_lst)
+    plot_detect_conf(detections, 'train')
+
+    # Our cis val
+    file_lst = np.load('X_val_cis.npz')['arr_0']
+    detections = extract_detections(im_dict, file_lst)
+    plot_detect_conf(detections, 'val cis')
+
+    # Our trans val
+    file_lst = np.load('X_val_trans.npz')['arr_0']
+    detections = extract_detections(im_dict, file_lst)
+    plot_detect_conf(detections, 'val trans')
+
+    # Our cis test
+    file_lst = np.load('X_test_cis.npz')['arr_0']
+    detections = extract_detections(im_dict, file_lst)
+    plot_detect_conf(detections, 'test cis')
+
+    # Our trans test
+    file_lst = np.load('X_test_trans.npz')['arr_0']
+    detections = extract_detections(im_dict, file_lst)
+    plot_detect_conf(detections, 'test trans')
+
 
 def main():
     with open('iwildcam2020_train_annotations.json') as f:
-        data = json.load(f)
-    #plot_animals(data['categories'])
-    plot_locations(data['images'], data['categories'], data['annotations'])
+        annotations = json.load(f)
+    #plot_animals(annotations['categories'])
+    # plot_locations(annotations['images'], annotations['categories'], annotations['annotations'])
+
+    with open('iwildcam2020_megadetector_results.json') as f:
+        detections = json.load(f)['images']
+
+    plot_detect_conf_all(annotations, detections)
 
 if __name__ == '__main__':
     main()
