@@ -45,7 +45,7 @@ def fit(train_loader, val_cis_loader, val_trans_loader, model, loss_fn, optimize
         val_cis_losses.append(val_cis_loss)
         val_trans_losses.append(val_trans_loss)
         scheduler.step()
-        torch.save(model.state_dict(), "triplet_fixed_resnet_{}.pt".format(epoch))
+        torch.save(model.state_dict(), "triplet_batch_hard_{}.pt".format(epoch))
 
         print(message)
 
@@ -80,11 +80,13 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
 
         if type(outputs) not in (tuple, list):
             outputs = (outputs,)
+            print('make outputs tuple')
 
         loss_inputs = outputs
         if target is not None:
             target = (target,)
             loss_inputs += target
+            print(loss_inputs)
 
         loss_outputs = loss_fn(*loss_inputs)
         loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
