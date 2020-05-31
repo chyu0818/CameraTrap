@@ -248,7 +248,7 @@ class TripletLossBatchHard(nn.Module):
         return distances
 
 
-    def get_valid_positive_mask(self, labels):
+    def get_anchor_positive_triplet_mask(self, labels):
         """
         To be a valid positive pair (a,p),
             - a and p are different embeddings
@@ -263,7 +263,7 @@ class TripletLossBatchHard(nn.Module):
         return mask
 
 
-    def get_valid_negative_mask(self, labels):
+    def get_anchor_negative_triplet_mask(self, labels):
         """
         To be a valid negative pair (a,n),
             - a and n are different embeddings
@@ -330,6 +330,5 @@ class TripletLossBatchHard(nn.Module):
 
 
     def forward(self, embeddings, labels):
-        print('forward')
         triplet_loss = self.batch_hard_triplet_loss(labels, embeddings)
         return triplet_loss

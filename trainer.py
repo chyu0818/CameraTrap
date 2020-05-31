@@ -80,13 +80,11 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
 
         if type(outputs) not in (tuple, list):
             outputs = (outputs,)
-            print('make outputs tuple')
 
         loss_inputs = outputs
         if target is not None:
             target = (target,)
             loss_inputs += target
-            print(loss_inputs)
 
         loss_outputs = loss_fn(*loss_inputs)
         loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
