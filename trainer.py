@@ -51,9 +51,9 @@ def fit(train_loader, val_cis_loader, val_trans_loader, model, loss_fn, optimize
 
     print('Train Time:', time.time()-start)
     # You may optionally save your model at each epoch here
-    np.save("train_loss.npy", np.array(train_losses))
-    np.save("test_cis_loss.npy", np.array(val_cis_losses))
-    np.save("test_trans_loss.npy", np.array(val_trans_losses))
+    np.save("train_loss_batch_hard.npy", np.array(train_losses))
+    np.save("test_cis_loss_batch_hard.npy", np.array(val_cis_losses))
+    np.save("test_trans_loss_batch_hard.npy", np.array(val_trans_losses))
 
 
 
