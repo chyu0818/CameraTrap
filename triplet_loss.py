@@ -120,7 +120,7 @@ class TripletLossBatchAll(nn.Module):
         return distances
 
 
-    def get_valid_triplets_mask(self, labels):
+    def get_triplet_mask(self, labels):
         """
         To be valid, a triplet (a,p,n) has to satisfy:
             - a,p,n are distinct embeddings
@@ -161,8 +161,8 @@ class TripletLossBatchAll(nn.Module):
         # Get the pairwise distance matrix
         pairwise_dist = self.pairwise_distances(embeddings, squared=squared)
 
-        anchor_positive_dist = distances.unsqueeze(2)
-        anchor_negative_dist = distances.unsqueeze(1)
+        anchor_positive_dist = pairwise_dist.unsqueeze(2)
+        anchor_negative_dist = pairwise_dist.unsqueeze(1)
 
         # Compute a 3D tensor of size (batch_size, batch_size, batch_size)
         # triplet_loss[i, j, k] will contain the triplet loss of anchor=i, positive=j, negative=k

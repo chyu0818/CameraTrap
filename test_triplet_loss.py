@@ -2,7 +2,7 @@ import numpy as np
 import torch
 #https://github.com/Yuol96/pytorch-triplet-loss/blob/master/model/tests/test_triplet_loss.py
 
-def pairwise_distances_pytorch(embeddings, squared=False):
+def pairwise_distances(embeddings, squared=False):
     """Compute the 2D matrix of distances between all the embeddings.
 
     Args:
@@ -84,8 +84,8 @@ def batch_all_triplet_loss(labels, embeddings, margin, squared=False):
     # Get the pairwise distance matrix
     pairwise_dist = pairwise_distances(embeddings, squared=squared)
 
-    anchor_positive_dist = distances.unsqueeze(2)
-    anchor_negative_dist = distances.unsqueeze(1)
+    anchor_positive_dist = pairwise_dist.unsqueeze(2)
+    anchor_negative_dist = pairwise_dist.unsqueeze(1)
 
     # Compute a 3D tensor of size (batch_size, batch_size, batch_size)
     # triplet_loss[i, j, k] will contain the triplet loss of anchor=i, positive=j, negative=k
@@ -95,7 +95,7 @@ def batch_all_triplet_loss(labels, embeddings, margin, squared=False):
 
     # Put to zero the invalid triplets
     # (where label(a) != label(p) or label(n) == label(a) or a == p)
-    mask = get_triplet_mask(labels)
+    mask = get_valid_triplets_mask(labels)
     triplet_loss = triplet_loss * mask.float()
 
     # Remove negative losses (i.e. the easy triplets)
@@ -162,7 +162,7 @@ def batch_hard_triplet_loss(labels, embeddings, margin, squared=False):
 
     # For each anchor, get the hardest positive
     # First, we need to get a mask for every valid positive (they should have same label)
-    mask_anchor_positive = get_anchor_positive_triplet_mask(labels)
+    mask_anchor_positive = get_valid_positive_mask(labels)
     mask_anchor_positive = mask_anchor_positive.float()
 
     # We put to 0 any element where (a, p) is not valid (valid if a != p and label(a) == label(p))
@@ -173,7 +173,7 @@ def batch_hard_triplet_loss(labels, embeddings, margin, squared=False):
 
     # For each anchor, get the hardest negative
     # First, we need to get a mask for every valid negative (they should have different labels)
-    mask_anchor_negative = get_anchor_negative_triplet_mask(labels)
+    mask_anchor_negative = get_valid_negative_mask(labels)
     mask_anchor_negative = mask_anchor_negative.float()
 
     # We add the maximum value in each row to the invalid negatives (label(a) == label(n))
@@ -224,7 +224,7 @@ def test_pairwise_distances():
 
     for squared in [True, False]:
     	res_np = pairwise_distance_np(embeddings, squared=squared)
-    	res_pytorch = pairwise_distances_pytorch(torch.from_numpy(embeddings), squared=squared)
+    	res_pytorch = pairwise_distances(torch.from_numpy(embeddings), squared=squared)
     	assert np.allclose(res_np, res_pytorch.numpy())
 
 def test_anchor_positive_triplet_mask():
@@ -351,3 +351,15 @@ def test_batch_hard_triplet_loss():
         # Compute the loss in TF.
         loss_pytorch = batch_hard_triplet_loss(torch.from_numpy(labels), torch.from_numpy(embeddings), margin, squared=squared)
         assert np.allclose(loss_np, loss_pytorch.item())
+
+
+def main():
+    test_pairwise_distances()
+    test_anchor_positive_triplet_mask()
+    test_anchor_negative_triplet_mask()
+    test_triplet_mask()
+    test_batch_all_triplet_loss()
+    test_batch_hard_triplet_loss()
+
+if __name__ == '__main__':
+    main()
