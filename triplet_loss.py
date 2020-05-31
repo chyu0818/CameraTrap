@@ -126,7 +126,7 @@ class TripletLossBatchAll(nn.Module):
             - a,p,n are distinct embeddings
             - a and p have the same label, while a and n have different label
         """
-        indices_equal = torch.eye(labels.size(0)).byte().cuda()
+        indices_equal = torch.eye(labels.size(0)).bool().cuda()
         indices_not_equal = ~indices_equal
         i_ne_j = indices_not_equal.unsqueeze(2)
         i_ne_k = indices_not_equal.unsqueeze(1)
@@ -254,7 +254,7 @@ class TripletLossBatchHard(nn.Module):
             - a and p are different embeddings
             - a and p have the same label
         """
-        indices_equal = torch.eye(labels.size(0)).byte().cuda()
+        indices_equal = torch.eye(labels.size(0)).bool().cuda()
         indices_not_equal = ~indices_equal
 
         label_equal = torch.eq(labels.unsqueeze(1), labels.unsqueeze(0)).cuda()
@@ -269,7 +269,7 @@ class TripletLossBatchHard(nn.Module):
             - a and n are different embeddings
             - a and n have the different label
         """
-        indices_equal = torch.eye(labels.size(0)).byte().cuda()
+        indices_equal = torch.eye(labels.size(0)).bool().cuda()
         indices_not_equal = ~indices_equal
 
         label_not_equal = torch.ne(labels.unsqueeze(1), labels.unsqueeze(0)).cuda()
