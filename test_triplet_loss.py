@@ -35,12 +35,12 @@ def pairwise_distances_pytorch(embeddings, squared=False):
         # we need to add a small epsilon where distances == 0.0
         epsilon=1e-16
         mask = torch.eq(distances, 0).float()
-        distances += mask * epsilon
+        distances = distances + mask * epsilon
 
         distances = torch.sqrt(distances)
 
         # Correct the epsilon added: set the distances on the mask to be exactly 0.0
-        distances *= (1.0 - mask)
+        distances = distances * (1.0 - mask)
     return distances
 
 def get_valid_triplets_mask(labels):
@@ -49,7 +49,7 @@ def get_valid_triplets_mask(labels):
         - a,p,n are distinct embeddings
         - a and p have the same label, while a and n have different label
     """
-    indices_equal = torch.eye(labels.size(0)).byte()
+    indices_equal = torch.eye(labels.size(0)).bool()
     indices_not_equal = ~indices_equal
     i_ne_j = indices_not_equal.unsqueeze(2)
     i_ne_k = indices_not_equal.unsqueeze(1)
@@ -99,7 +99,7 @@ def batch_all_triplet_loss(labels, embeddings, margin, squared=False):
     triplet_loss = triplet_loss * mask.float()
 
     # Remove negative losses (i.e. the easy triplets)
-    triplet_loss.clamp_(min=0)
+    triplet_loss = triplet_loss.clamp(min=0)
 
     # Count number of positive triplets (where triplet_loss > 0)
     epsilon = 1e-16
@@ -118,7 +118,7 @@ def get_valid_positive_mask(labels):
         - a and p are different embeddings
         - a and p have the same label
     """
-    indices_equal = torch.eye(labels.size(0)).byte()
+    indices_equal = torch.eye(labels.size(0)).bool()
     indices_not_equal = ~indices_equal
 
     label_equal = torch.eq(labels.unsqueeze(1), labels.unsqueeze(0))
@@ -133,7 +133,7 @@ def get_valid_negative_mask(labels):
         - a and n are different embeddings
         - a and n have the different label
     """
-    indices_equal = torch.eye(labels.size(0)).byte()
+    indices_equal = torch.eye(labels.size(0)).bool()
     indices_not_equal = ~indices_equal
 
     label_not_equal = torch.ne(labels.unsqueeze(1), labels.unsqueeze(0))
