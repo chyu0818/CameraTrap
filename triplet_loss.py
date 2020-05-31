@@ -117,7 +117,7 @@ class TripletLossBatchAll(nn.Module):
 
             # Correct the epsilon added: set the distances on the mask to be exactly 0.0
             distances *= (1.0 - mask)
-    return distances
+        return distances
 
 
     def get_valid_triplets_mask(self, labels):
@@ -245,7 +245,7 @@ class TripletLossBatchHard(nn.Module):
 
             # Correct the epsilon added: set the distances on the mask to be exactly 0.0
             distances *= (1.0 - mask)
-    return distances
+        return distances
 
 
     def get_valid_positive_mask(self, labels):
