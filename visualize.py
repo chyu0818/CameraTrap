@@ -59,7 +59,7 @@ def plot_train_test_loss_epoch(train_loss, test_loss, test_cis_loss, test_trans_
     ax.set(xlabel='Epoch', ylabel='Loss', yscale='log', title='Loss By Epoch')
     ax.legend(title='Type of Loss (only validation)')
     plt.tight_layout()
-    plt.savefig('loss_by_epoch_val_64.png')
+    plt.savefig('exp2/loss_by_epoch_val_64.png')
     return
 
 def main():
@@ -69,10 +69,11 @@ def main():
     num_val_trans = 6382
     num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
     num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
-
-    train_loss = np.load('train_loss.npy')
-    test_cis_loss = np.load('test_cis_loss.npy')
-    test_trans_loss = np.load('test_trans_loss.npy')
+    
+    directory = "exp2/"
+    train_loss = np.load(directory + 'train_triplet_classifier_loss.npy')
+    test_cis_loss = np.load(directory + 'test_triplet_classifier_cis_loss.npy')
+    test_trans_loss = np.load(directory + 'test_triplet_classifier_trans_loss.npy')
     print(train_loss)
     print(test_cis_loss)
     print(test_trans_loss)
