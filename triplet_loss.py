@@ -48,7 +48,21 @@ class Classifier(nn.Module):
         x = F.relu(x)
         x = self.fc3(x)
         return x
-        
+
+class ClassifierCombined(nn.Module):
+    def __init__(self):
+        super(ClassifierCombined, self).__init__()
+        self.fc1 = nn.Linear(2000, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 267)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
+        return x        
         
 class TripletLoss(nn.Module):
     """
