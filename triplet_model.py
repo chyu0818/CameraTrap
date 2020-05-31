@@ -16,19 +16,19 @@ from data_reader import CameraTrapCropTripletDataset, CameraTrapCropTripletDatas
 from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll, TripletLossBatchHard
 
 cuda = torch.cuda.is_available()
-BATCH_SIZE_TRAIN = 512
-BATCH_SIZE_VAL = 512
+BATCH_SIZE_TRAIN = 1000
+BATCH_SIZE_VAL = 1000
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
-NUM_EPOCHS = 1
+NUM_EPOCHS = 20
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225])
-transform_val = T.Compose([T.Resize(size=(64,64)),
+transform_val = T.Compose([T.Resize(size=(256,256)),
                        T.ToTensor(),
                        normalize])
 transform_train = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-                       T.RandomResizedCrop(size=(64,64),scale=(0.8, 1.0)),
+                       T.RandomResizedCrop(size=(256,256),scale=(0.8, 1.0)),
                        T.ToTensor(),
                        normalize])
 
