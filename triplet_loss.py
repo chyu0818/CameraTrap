@@ -111,12 +111,12 @@ class TripletLossBatchAll(nn.Module):
             # we need to add a small epsilon where distances == 0.0
             epsilon=1e-16
             mask = torch.eq(distances, 0).float()
-            distances += mask * epsilon
+            distances = distances + mask * epsilon
 
             distances = torch.sqrt(distances)
 
             # Correct the epsilon added: set the distances on the mask to be exactly 0.0
-            distances *= (1.0 - mask)
+            distances = distances * (1.0 - mask)
         return distances
 
 
@@ -176,7 +176,7 @@ class TripletLossBatchAll(nn.Module):
         triplet_loss = triplet_loss * mask.float()
 
         # Remove negative losses (i.e. the easy triplets)
-        triplet_loss.clamp_(min=0)
+        triplet_loss = triplet_loss.clamp(min=0)
 
         # Count number of positive triplets (where triplet_loss > 0)
         epsilon = 1e-16
@@ -239,12 +239,12 @@ class TripletLossBatchHard(nn.Module):
             # we need to add a small epsilon where distances == 0.0
             epsilon=1e-16
             mask = torch.eq(distances, 0).float()
-            distances += mask * epsilon
+            distances = distances + mask * epsilon
 
             distances = torch.sqrt(distances)
 
             # Correct the epsilon added: set the distances on the mask to be exactly 0.0
-            distances *= (1.0 - mask)
+            distances = distances * (1.0 - mask)
         return distances
 
 
