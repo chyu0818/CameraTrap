@@ -87,8 +87,8 @@ if cuda:
     model.cuda()
 
 # loss_fn = TripletLoss()
-# loss_fn = TripletLossBatchAll()
-loss_fn = TripletLossBatchHard()
+loss_fn = TripletLossBatchAll()
+# loss_fn = TripletLossBatchHard()
 
 lr = 1
 optimizer = optim.Adadelta(model.parameters(), lr=lr)
