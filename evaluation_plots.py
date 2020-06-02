@@ -87,7 +87,7 @@ def plot_embeddings(embeddings, targets, classes, categories, title):
                     color=colors[i], marker='.', alpha=0.5, label=categories[j]['name'])
     # plt.legend(title='Class')
     plt.title('Feature Vectors By Class ({})'.format(title))
-    plt.savefig('tSNE_embedding_{}.png'.format(title))
+    plt.savefig('plots/tSNE_embedding_{}.png'.format(title))
     return embeddings_tsne
 
 
@@ -223,19 +223,8 @@ def main():
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
     model_path = "models/triplet_batch_all_2_conf_9.pt"
     percent_data = 1
+    triplet = True
     # ~70k train, ~20k val
-
-
-    embedding_net = models.resnet18(pretrained=True)
-    # for param in embedding_net.parameters():
-    #     param.requires_grad = False
-    embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
-
-    # model = TripletNet(embedding_net)
-    model = Embedder(embedding_net)
-    model.cuda()
-
-    model.load_state_dict(torch.load(model_path))
 
     print('Train Data')
     train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
@@ -257,6 +246,18 @@ def main():
     val_trans_loader = torch.utils.data.DataLoader(
             val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
     )
+
+    if triplet:
+        embedding_net = models.resnet18(pretrained=True)
+        # for param in embedding_net.parameters():
+        #     param.requires_grad = False
+        embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
+
+        # model = TripletNet(embedding_net)
+        model = Embedder(embedding_net)
+        model.cuda()
+
+        model.load_state_dict(torch.load(model_path))
 
     # Choose 10 random classes out of classes with over 1000 (not empty or human)
     with open(ann_path) as f:
@@ -295,15 +296,15 @@ def main():
 
 
     # Plot error rate by number of examples in class.
-    # plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
+    plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
 
     # Plot 9 mistakes.
-    # train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-    # val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
-    # val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
-    # print('Train mistakes:', train_mistakes)
-    # print('Val cis mistakes:', val_cis_mistakes)
-    # print('Val trans mistakes:', val_trans_mistakes)
+    train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
+    val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
+    val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
+    print('Train mistakes:', train_mistakes)
+    print('Val cis mistakes:', val_cis_mistakes)
+    print('Val trans mistakes:', val_trans_mistakes)
 
 if __name__ == '__main__':
     main()
