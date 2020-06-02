@@ -20,7 +20,7 @@ from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll,
 BATCH_SIZE_TRAIN = 512
 BATCH_SIZE_VAL = 512
 LOG_INTERVAL = 10
-NUM_CLASSES = 267 # 267??
+NUM_CLASSES = 1000
 NUM_EPOCHS = 20
 NUM_VAL_CIS = 3307
 NUM_VAL_TRANS = 6382
@@ -60,7 +60,7 @@ def test(model, device, test_loader):
 def extract_embeddings(dataloader, model):
     with torch.no_grad():
         model.eval()
-        embeddings = np.zeros((len(dataloader.dataset), 2))
+        embeddings = np.zeros((len(dataloader.dataset), NUM_CLASSES))
         labels = np.zeros(len(dataloader.dataset))
         k = 0
         for data0 in dataloader:
@@ -226,7 +226,7 @@ def main():
     embedding_net = models.resnet18(pretrained=True)
     # for param in embedding_net.parameters():
     #     param.requires_grad = False
-    embedding_net.fc = torch.nn.Linear(512, 1000)
+    embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
 
     # model = TripletNet(embedding_net)
     model = Embedder(embedding_net)
@@ -271,12 +271,11 @@ def main():
             counts.append(categories_sort[i]['count'])
     names = np.asarray(names)
     ids = np.asarray(ids)
-    print(ids)
     counts = np.asarray(counts)
 
     # Find classes over 1000. 
     classes_all = ids[counts >= 1000]
-    classes_rand = np.random.choice(classes_all, 10)
+    classes_rand = np.random.choice(classes_all, 10, replace=False)
     print(classes_all, len(classes_all))
     print(classes_rand)
 
