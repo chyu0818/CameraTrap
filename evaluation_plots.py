@@ -76,14 +76,15 @@ def extract_embeddings(dataloader, model):
 # Visualizes the tSNE embedding.
 def plot_embeddings(embeddings, targets, classes, categories, title):
     colors = cm.rainbow(np.linspace(0, 1, len(classes)))
-    print(embeddings)
+    print(embeddings.shape)
     embeddings_pca = PCA(n_components=200).fit_transform(embeddings)
     embeddings_tsne = TSNE(n_components=2).fit_transform(embeddings_pca)
 
-    for j in classes:
+    for i in range(len(classes)):
+        j = classes[i]
         inds = np.where(targets==j)[0]
         plt.scatter(embeddings_tsne[inds,0], embeddings_tsne[inds,1],
-                    color=colors[j], marker='.', alpha=0.5, label=categories[j]['name'])
+                    color=colors[i], marker='.', alpha=0.5, label=categories[j]['name'])
     plt.legend(title='Class')
     plt.title('Feature Vectors By Class ({})'.format(title))
     plt.savefig('tSNE_embedding_{}.png'.format(title))
@@ -221,7 +222,7 @@ def main():
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
     model_path = "models/triplet_batch_all_2_conf_9.pt"
-    percent_data = 0.01
+    percent_data = 0.1
     # ~70k train, ~20k val
 
 
