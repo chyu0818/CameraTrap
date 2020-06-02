@@ -282,7 +282,7 @@ def main():
     # classes_rand = np.random.choice(classes_all, 10, replace=False)
     # print(classes_all, len(classes_all))
     # print(classes_rand)
-    classes_rand = [238, 61, 48, 51, 19, 2, 239, 113, 105, 6]
+    classes_rand = [135, 136, 141, 144, 145, 146, 150, 173, 177, 204]
 
     # Plot embeddings
     val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
