@@ -64,10 +64,8 @@ def extract_embeddings(dataloader, model):
         labels = np.zeros(len(dataloader.dataset))
         k = 0
         for data0 in dataloader:
-            images = data0['image']
+            images = data0['image'].cuda()
             target = data0['target']
-            if cuda:
-                images = images.cuda()
             embeddings[k:k+len(images)] = model.get_embedding(images).data.cpu().numpy()
             labels[k:k+len(images)] = target.numpy()
             k += len(images)
@@ -75,7 +73,7 @@ def extract_embeddings(dataloader, model):
 
 
 # Visualizes the tSNE embedding.
-def plot_embeddings(embeddings, targets, classes, title):
+def plot_embeddings(embeddings, targets, classes, categories, title):
     colors = cm.rainbow(np.linspace(0, 1, len(classes)))
     embeddings_pca = PCA(n_components=200).fit_transform(embeddings)
     embeddings_tsne = TSNE(n_components=2).fit_transform(embeddings_pca)
@@ -83,7 +81,7 @@ def plot_embeddings(embeddings, targets, classes, title):
     for j in classes:
         inds = np.where(targets==j)[0]
         plt.scatter(embeddings_tsne[inds,0], embeddings_tsne[inds,1],
-                    color=colors[j], marker='.', alpha=0.5, label=j)
+                    color=colors[j], marker='.', alpha=0.5, label=categories[j]['name'])
     plt.legend(title='Class')
     plt.title('Feature Vectors By Class ({})'.format(title))
     plt.savefig('tSNE_embedding_{}.png'.format(title))
@@ -267,9 +265,10 @@ def main():
     ids = []
     counts = []
     for i in range(len(categories)):
-        names.append(categories_sort[i]['name'])
-        ids.append(categories_dict[categories_sort[i]['id']])
-        counts.append(categories_sort[i]['count'])
+        if categories_sort[i]['id'] != 0 and categories_sort[i]['id'] != 75:
+            names.append(categories_sort[i]['name'])
+            ids.append(categories_dict[categories_sort[i]['id']])
+            counts.append(categories_sort[i]['count'])
     names = np.asarray(names)
     ids = np.asarray(ids)
     print(ids)
@@ -283,13 +282,13 @@ def main():
 
     # Plot embeddings
     val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
-    plot_embeddings(val_cis_embeddings, val_cis_targets, classes_rand, 'val_cis')
+    plot_embeddings(val_cis_embeddings, val_cis_targets, classes_rand, categories, 'val_cis')
 
     val_trans_embeddings, val_trans_targets = extract_embeddings(val_cis_loader, model)
-    plot_embeddings(val_trans_embeddings, val_trans_targets, classes_rand, 'val_trans')
+    plot_embeddings(val_trans_embeddings, val_trans_targets, classes_rand, categories, 'val_trans')
 
     train_embeddings, train_targets = extract_embeddings(train_loader, model)
-    plot_embeddings(train_embeddings, train_targets, classes_rand, 'train')
+    plot_embeddings(train_embeddings, train_targets, classes_rand, categories, 'train')
 
 
     # Plot error rate by number of examples in class.

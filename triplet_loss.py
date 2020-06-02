@@ -34,6 +34,9 @@ class Embedder(nn.Module):
         #x = self.fc3(x)
         return x
 
+    def get_embedding(self, x):
+        return self.embedding_net(x)
+
 class Classifier(nn.Module):
     def __init__(self):
         super(Classifier, self).__init__()
