@@ -16,8 +16,8 @@ from data_reader import CameraTrapCropTripletDataset, CameraTrapCropTripletDatas
 from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll, TripletLossBatchHard
 
 cuda = torch.cuda.is_available()
-BATCH_SIZE_TRAIN = 1000
-BATCH_SIZE_VAL = 1000
+BATCH_SIZE_TRAIN = 128
+BATCH_SIZE_VAL = 128
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
 NUM_EPOCHS = 20
@@ -39,7 +39,7 @@ val_trans_path = 'X_val_trans.npz'
 img_path = '../efs/train_crop'
 ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-percent_data = 0.01
+percent_data = 1
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {} 
 
 # Random triplets

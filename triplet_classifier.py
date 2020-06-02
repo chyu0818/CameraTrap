@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from data_reader import CameraTrapCropDataset, CameraTrapEmbeddingDataset
-from triplet_loss import Embedder, Classifier
+from triplet_loss import Embedder, Classifier, ClassifierCombined
 
 def train(model, device, train_loader, optimizer, epoch):
     '''
@@ -66,9 +66,10 @@ def test(model, device, test_loader):
         100. * correct / total))
     return test_loss
 
-def get_embeddings(model, device, test_loader):
+def get_embeddings(model, device, test_loader, model2):
     model.eval()    # Set the model to inference mode
-    embeddings = np.zeros((len(test_loader.dataset), 1000))
+    model2.eval()
+    embeddings = np.zeros((len(test_loader.dataset), 2000))
     labels = np.zeros(len(test_loader.dataset))
     k = 0
     with torch.no_grad():   # For the inference step, gradient is not computed
@@ -76,15 +77,16 @@ def get_embeddings(model, device, test_loader):
             data = data0['image']
             target = data0['target']
             data, target = data.to(device), target.to(device)
-            embeddings[k:k + len(data)] = model(data).cpu().numpy()
+            embeddings[k:k + len(data)] = np.hstack((model(data).cpu().numpy(),
+model2(data).cpu().numpy()))
             labels[k: k + len(data)] = target.cpu().numpy()
             k += len(data)
     return embeddings, labels
 
 
-cuda = torch.cuda.is_available()
-BATCH_SIZE_TRAIN = 512
-BATCH_SIZE_VAL = 512
+cuda = True
+BATCH_SIZE_TRAIN = 128
+BATCH_SIZE_VAL = 128
 LOG_INTERVAL = 20
 NUM_CLASSES = 267
 NUM_EPOCHS = 20
@@ -92,7 +94,7 @@ NUM_EPOCHS = 20
 
 normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225])
-transform_val = T.Compose([T.Resize(size=(64,64)),
+transform_val = T.Compose([T.Resize(size=(256, 256)),
                        T.ToTensor(),
                        normalize])
 transform_train = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
@@ -108,7 +110,7 @@ ann_path = '../efs/iwildcam2020_train_annotations.json'
 bbox_path = '../efs/iwildcam2020_megadetector_results.json'
 percent_data = 1
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {} 
-weights_path = "models/10_64_512_triplet_aug/triplet_finetune_resnet_10.pt"
+weights_path = "triplet_batch_all_2.pt"
 
 print('Train Data')
 train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
@@ -145,15 +147,22 @@ for param in model.parameters():
 device = "cuda"
 model.to(device)
 
+model2 = models.resnet18(pretrained=True)
+for param in model2.parameters():
+    param.requries_grad = False
+
+model2.to(device)
+
 print("Obtaining Embeddings!")
 
-X_train, y_train = get_embeddings(model, device, train_loader)
+X_train, y_train = get_embeddings(model, device, train_loader, model2)
 print("Got Train Embeddings!", X_train.shape, y_train.shape)
 
-X_val_cis, y_val_cis = get_embeddings(model, device, val_cis_loader)
+X_val_cis, y_val_cis = get_embeddings(model, device, val_cis_loader, model2)
 print("Got Val Cis Embeddings")
 
-X_val_trans, y_val_trans = get_embeddings(model, device, val_trans_loader)
+X_val_trans, y_val_trans = get_embeddings(model, device, val_trans_loader,
+model2)
 print("Got Val Trans Embeddings")
 
 train_dataset = CameraTrapEmbeddingDataset(X_train, y_train)
@@ -170,7 +179,7 @@ val_trans_loader = torch.utils.data.DataLoader(
         val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
 )
 
-model = Classifier()
+model = ClassifierCombined()
 model.to(device)
 
 
@@ -182,7 +191,7 @@ optimizer = optim.Adadelta(model.parameters(), lr=lr)
 step = 1
 gamma = 0.7
 scheduler = StepLR(optimizer, step_size=step, gamma=gamma)
-
+directory = "exp5/"
 # Training loop
 train_losses = []
 test_cis_losses = []
@@ -196,12 +205,12 @@ for epoch in range(1, NUM_EPOCHS + 1):
     test_cis_losses.append(test_cis_loss)
     test_trans_losses.append(test_trans_loss)
     scheduler.step()    # learning rate scheduler
-    torch.save(model.state_dict(), "triplet_classifier_{}_{}.pt".format(percent_data,epoch))
+    torch.save(model.state_dict(), directory + "triplet_classifier_{}_{}.pt".format(percent_data,epoch))
 print('Train Time:', time.time()-start)
 # You may optionally save your model at each epoch here
-np.save("train_triplet_classifier_loss{}.npy".format(percent_data), np.array(train_losses))
-np.save("test_triplet_classifier_cis_loss{}.npy".format(percent_data), np.array(test_cis_losses))
-np.save("test_triplet_classifier_trans_loss{}.npy".format(percent_data), np.array(test_trans_losses))
+np.save(directory + "train_triplet_classifier_loss{}.npy".format(percent_data), np.array(train_losses))
+np.save(directory + "test_triplet_classifier_cis_loss{}.npy".format(percent_data), np.array(test_cis_losses))
+np.save(directory + "test_triplet_classifier_trans_loss{}.npy".format(percent_data), np.array(test_trans_losses))
 
 print("\nFinal Performance!")
 print("Validation Set (cis):")
