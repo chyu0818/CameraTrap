@@ -221,7 +221,7 @@ def main():
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
     model_path = "models/triplet_batch_all_2_conf_9.pt"
-    percent_data = 1
+    percent_data = 0.01
     # ~70k train, ~20k val
 
 
@@ -232,8 +232,7 @@ def main():
 
     # model = TripletNet(embedding_net)
     model = Embedder(embedding_net)
-    if cuda:
-        model.cuda()
+    model.cuda()
 
     model.load_state_dict(torch.load(model_path))
 
