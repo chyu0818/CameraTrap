@@ -13,6 +13,9 @@ import time
 import matplotlib.pyplot as plt
 from PIL import Image
 import os
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
+from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll, TripletLossBatchHard
 
 BATCH_SIZE_TRAIN = 512
 BATCH_SIZE_VAL = 512
@@ -24,6 +27,7 @@ NUM_VAL_TRANS = 6382
 NUM_VAL_CIS_FRAC = NUM_VAL_CIS / (NUM_VAL_CIS + NUM_VAL_TRANS)
 NUM_VAL_TRANS_FRAC = NUM_VAL_TRANS/ (NUM_VAL_CIS + NUM_VAL_TRANS)
 
+# top 5?
 def test(model, device, test_loader):
     criterion = nn.CrossEntropyLoss(reduction='sum')
     model.eval()    # Set the model to inference mode
@@ -32,7 +36,6 @@ def test(model, device, test_loader):
     test_loss = 0
     correct = 0
     total1 = 0
-    print(error.shape)
     with torch.no_grad():   # For the inference step, gradient is not computed
         for data0 in test_loader:
             data = data0['image']
@@ -52,6 +55,40 @@ def test(model, device, test_loader):
         test_loss, correct, total1,
         100. * correct / total1))
     return error, total, test_loss
+
+
+def extract_embeddings(dataloader, model):
+    with torch.no_grad():
+        model.eval()
+        embeddings = np.zeros((len(dataloader.dataset), 2))
+        labels = np.zeros(len(dataloader.dataset))
+        k = 0
+        for data0 in dataloader:
+            images = data0['image']
+            target = data0['target']
+            if cuda:
+                images = images.cuda()
+            embeddings[k:k+len(images)] = model.get_embedding(images).data.cpu().numpy()
+            labels[k:k+len(images)] = target.numpy()
+            k += len(images)
+    return embeddings, labels
+
+
+# Visualizes the tSNE embedding.
+def plot_embeddings(embeddings, targets, classes, title):
+    colors = cm.rainbow(np.linspace(0, 1, len(classes)))
+    embeddings_pca = PCA(n_components=200).fit_transform(embeddings)
+    embeddings_tsne = TSNE(n_components=2).fit_transform(embeddings_pca)
+
+    for j in classes:
+        inds = np.where(targets==j)[0]
+        plt.scatter(embeddings_tsne[inds,0], embeddings_tsne[inds,1],
+                    color=colors[j], marker='.', alpha=0.5, label=j)
+    plt.legend(title='Class')
+    plt.title('Feature Vectors By Class ({})'.format(title))
+    plt.savefig('tSNE_embedding_{}.png'.format(title))
+    return embeddings_tsne
+
 
 # Plots 9 examples from the test set where the classifier made a mistake.
 def plot_mistakes(model, device, test_loader, save_fn):
@@ -162,19 +199,20 @@ def plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader,
     plt.savefig('plots/error_v_num_ex_per_class.png')
     return
 
+
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     kwargs = {'num_workers': 1, 'pin_memory': True} if device=='cuda' else {}
-    model = models.resnet18(pretrained=True)
+    # model = models.resnet18(pretrained=True)
 
-    model.fc = torch.nn.Linear(512, NUM_CLASSES)
-    model.to(device)
+    # model.fc = torch.nn.Linear(512, NUM_CLASSES)
+    # model.to(device)
 
     normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     #transform = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor()])
     # Not sure if Crop is required
-    transform = T.Compose([T.Resize((64,64)), T.ToTensor(), normalize])
+    transform = T.Compose([T.Resize((256,256)), T.ToTensor(), normalize])
 
     train_path = 'X_train.npz'
     val_cis_path = 'X_val_cis.npz'
@@ -182,9 +220,22 @@ def main():
     img_path = '../efs/train_crop'
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-    model_path = "models/8_64_512_xaug/baseline1_8.pt"
+    model_path = "models/triplet_batch_all_2_conf_9.pt"
     percent_data = 1
     # ~70k train, ~20k val
+
+
+    embedding_net = models.resnet18(pretrained=True)
+    # for param in embedding_net.parameters():
+    #     param.requires_grad = False
+    embedding_net.fc = torch.nn.Linear(512, 1000)
+
+    # model = TripletNet(embedding_net)
+    model = Embedder(embedding_net)
+    if cuda:
+        model.cuda()
+
+    model.load_state_dict(torch.load(model_path))
 
     print('Train Data')
     train_dataset = CameraTrapCropDataset(img_path, train_path, ann_path, bbox_path,
@@ -207,18 +258,51 @@ def main():
             val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
     )
 
-    model.load_state_dict(torch.load(model_path))
+    # Choose 10 random classes out of classes with over 1000 (not empty or human)
+    with open(ann_path) as f:
+        annotations = json.load(f)
+    categories = annotations['categories']
+    categories_sort = sorted(categories, key=lambda k: k['count'], reverse=True)
+    categories_dict = {categories[i]['id']:i for i in range(len(categories))}
+    names = []
+    ids = []
+    counts = []
+    for i in range(len(categories)):
+        names.append(categories_sort[i]['name'])
+        ids.append(categories_dict[categories_sort[i]['id']])
+        counts.append(categories_sort[i]['count'])
+    names = np.asarray(names)
+    ids = np.asarray(ids)
+    print(ids)
+    counts = np.asarray(counts)
+
+    # Find classes over 1000. 
+    classes_all = ids[counts >= 1000]
+    classes_rand = np.random.choice(classes_all, 10)
+    print(classes_all, len(classes_all))
+    print(classes_rand)
+
+    # Plot embeddings
+    val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
+    plot_embeddings(val_cis_embeddings, val_cis_targets, classes_rand, 'val_cis')
+
+    val_trans_embeddings, val_trans_targets = extract_embeddings(val_cis_loader, model)
+    plot_embeddings(val_trans_embeddings, val_trans_targets, classes_rand, 'val_trans')
+
+    train_embeddings, train_targets = extract_embeddings(train_loader, model)
+    plot_embeddings(train_embeddings, train_targets, classes_rand, 'train')
+
 
     # Plot error rate by number of examples in class.
-    plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
+    # plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
 
     # Plot 9 mistakes.
-    train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-    val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
-    val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
-    print('Train mistakes:', train_mistakes)
-    print('Val cis mistakes:', val_cis_mistakes)
-    print('Val trans mistakes:', val_trans_mistakes)
+    # train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
+    # val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
+    # val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
+    # print('Train mistakes:', train_mistakes)
+    # print('Val cis mistakes:', val_cis_mistakes)
+    # print('Val trans mistakes:', val_trans_mistakes)
 
 if __name__ == '__main__':
     main()
