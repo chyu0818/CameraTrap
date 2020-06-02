@@ -76,6 +76,7 @@ def extract_embeddings(dataloader, model):
 # Visualizes the tSNE embedding.
 def plot_embeddings(embeddings, targets, classes, categories, title):
     colors = cm.rainbow(np.linspace(0, 1, len(classes)))
+    print(embeddings)
     embeddings_pca = PCA(n_components=200).fit_transform(embeddings)
     embeddings_tsne = TSNE(n_components=2).fit_transform(embeddings_pca)
 
@@ -262,23 +263,24 @@ def main():
     categories = annotations['categories']
     categories_sort = sorted(categories, key=lambda k: k['count'], reverse=True)
     categories_dict = {categories[i]['id']:i for i in range(len(categories))}
-    names = []
-    ids = []
-    counts = []
-    for i in range(len(categories)):
-        if categories_sort[i]['id'] != 0 and categories_sort[i]['id'] != 75:
-            names.append(categories_sort[i]['name'])
-            ids.append(categories_dict[categories_sort[i]['id']])
-            counts.append(categories_sort[i]['count'])
-    names = np.asarray(names)
-    ids = np.asarray(ids)
-    counts = np.asarray(counts)
+    # names = []
+    # ids = []
+    # counts = []
+    # for i in range(len(categories)):
+    #     if categories_sort[i]['id'] != 0 and categories_sort[i]['id'] != 75:
+    #         names.append(categories_sort[i]['name'])
+    #         ids.append(categories_dict[categories_sort[i]['id']])
+    #         counts.append(categories_sort[i]['count'])
+    # names = np.asarray(names)
+    # ids = np.asarray(ids)
+    # counts = np.asarray(counts)
 
-    # Find classes over 1000. 
-    classes_all = ids[counts >= 1000]
-    classes_rand = np.random.choice(classes_all, 10, replace=False)
-    print(classes_all, len(classes_all))
-    print(classes_rand)
+    # # Find classes over 1000. 
+    # classes_all = ids[counts >= 1000]
+    # classes_rand = np.random.choice(classes_all, 10, replace=False)
+    # print(classes_all, len(classes_all))
+    # print(classes_rand)
+    classes_rand = [238, 61, 48, 51, 19, 2, 239, 113, 105, 6]
 
     # Plot embeddings
     val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
