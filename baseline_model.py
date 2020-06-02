@@ -88,6 +88,7 @@ transform_val = T.Compose([T.Resize(size=(64,64)),
                        normalize])
 transform_train = T.Compose([T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
                        T.RandomResizedCrop(size=(64,64),scale=(0.8, 1.0)),
+                       T.RandomHorizontalFlip(),
                        T.ToTensor(),
                        normalize])
 
