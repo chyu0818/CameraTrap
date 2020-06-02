@@ -15,7 +15,7 @@ from PIL import Image
 import os
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
-from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll, TripletLossBatchHard
+from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll, TripletLossBatchHard, ResNetStripped
 import matplotlib.cm as cm
 
 BATCH_SIZE_TRAIN = 512
@@ -223,7 +223,6 @@ def main():
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
     model_path = "models/triplet_batch_all_2_conf_9.pt"
     percent_data = 1
-    triplet = True
     # ~70k train, ~20k val
 
     print('Train Data')
@@ -247,17 +246,28 @@ def main():
             val_trans_dataset, batch_size=BATCH_SIZE_VAL, shuffle=True, **kwargs
     )
 
-    if triplet:
-        embedding_net = models.resnet18(pretrained=True)
-        # for param in embedding_net.parameters():
-        #     param.requires_grad = False
-        embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
+    ### Uncomment for triplet model 
+    # embedding_net = models.resnet18(pretrained=True)
+    # embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
 
-        # model = TripletNet(embedding_net)
-        model = Embedder(embedding_net)
-        model.cuda()
+    # # model = TripletNet(embedding_net)
+    # model = Embedder(embedding_net)
+    # model.cuda()
 
-        model.load_state_dict(torch.load(model_path))
+    # model.load_state_dict(torch.load(model_path))
+
+    ### Uncomment for ResNet without last layer. 
+    embedding_net = models.resnet18(pretrained=True)
+    embedding_net.load_state_dict(torch.load(model_path))
+    model = ResNetStripped(embedding_net)
+    model.cuda()
+
+    ### Uncomment for full ResNet
+    # model = models.resnet18(pretrained=True)
+    # model.fc = torch.nn.Linear(512, NUM_CLASSES)
+    # model.to(device)
+    # model.load_state_dict(torch.load(model_path))
+
 
     # Choose 10 random classes out of classes with over 1000 (not empty or human)
     with open(ann_path) as f:
