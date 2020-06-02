@@ -16,6 +16,7 @@ import os
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from triplet_loss import TripletNet, TripletLoss, Embedder, TripletLossBatchAll, TripletLossBatchHard
+import matplotlib.cm as cm
 
 BATCH_SIZE_TRAIN = 512
 BATCH_SIZE_VAL = 512
