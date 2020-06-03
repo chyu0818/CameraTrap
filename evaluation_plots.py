@@ -249,7 +249,7 @@ def main():
 
     ### Uncomment for triplet model 
     embedding_net = models.resnet18(pretrained=True)
-    embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
+    embedding_net.fc = torch.nn.Linear(512, 1000)
 
     # model = TripletNet(embedding_net)
     model = Embedder(embedding_net)
