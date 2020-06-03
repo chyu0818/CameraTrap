@@ -222,7 +222,7 @@ def main():
     img_path = '../efs/train_crop'
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-    model_path = "models/finetune_resnet18.pt"
+    model_path = "models/triplet_batch_all_2_conf_9.pt"
     percent_data = 1
     # ~70k train, ~20k val
 
