@@ -1,4 +1,5 @@
 import torch
+import torchvision.models as models
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -21,6 +22,27 @@ class Embedder(nn.Module):
     def __init__(self, embedding_net):
         super(Embedder, self).__init__()
         self.embedding_net = embedding_net
+        #self.fc1 = nn.Linear(1000, 512)
+        #self.fc2 = nn.Linear(512, 256)
+        #self.fc3 = nn.Linear(256, 267)
+    
+    def forward(self, x):
+        x = self.embedding_net(x)
+        #x = self.fc1(x)
+        #x = F.relu(x)
+        #x = self.fc2(x)
+        #x = F.relu(x)
+        #x = self.fc3(x)
+        return x
+
+    def get_embedding(self, x):
+        return self.embedding_net(x)
+
+class ResNetStripped(nn.Module):
+    def __init__(self, embedding_net):
+        super(ResNetStripped, self).__init__()
+        self.pretrained_resnet = embedding_net
+        self.embedding_net = nn.Sequential(*list(self.pretrained_resnet.children())[:-1]).cuda()
         #self.fc1 = nn.Linear(1000, 512)
         #self.fc2 = nn.Linear(512, 256)
         #self.fc3 = nn.Linear(256, 267)
