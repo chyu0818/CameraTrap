@@ -222,7 +222,7 @@ def main():
     img_path = '../efs/train_crop'
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-    model_path = "models/triplet_batch_all_2_conf_9.pt"
+    model_path = "models/finetune_resnet18.pt"
     percent_data = 1
     # ~70k train, ~20k val
 
@@ -248,21 +248,21 @@ def main():
     )
 
     ### Uncomment for triplet model 
-    embedding_net = models.resnet18(pretrained=True)
-    embedding_net.fc = torch.nn.Linear(512, 1000)
+    # embedding_net = models.resnet18(pretrained=True)
+    # embedding_net.fc = torch.nn.Linear(512, 1000)
 
-    # model = TripletNet(embedding_net)
-    model = Embedder(embedding_net)
-    model.cuda()
+    # # model = TripletNet(embedding_net)
+    # model = Embedder(embedding_net)
+    # model.cuda()
 
-    model.load_state_dict(torch.load(model_path))
+    # model.load_state_dict(torch.load(model_path))
 
     ### Uncomment for ResNet without last layer. 
-    # embedding_net = models.resnet18(pretrained=True)
-    # embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
-    # embedding_net.load_state_dict(torch.load(model_path))
-    # model = ResNetStripped(embedding_net)
-    # model.cuda()
+    embedding_net = models.resnet18(pretrained=True)
+    embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
+    embedding_net.load_state_dict(torch.load(model_path))
+    model = ResNetStripped(embedding_net)
+    model.cuda()
 
     ### Uncomment for full ResNet
     # model = models.resnet18(pretrained=True)
