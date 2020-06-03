@@ -61,7 +61,7 @@ def test(model, device, test_loader):
 def extract_embeddings(dataloader, model):
     with torch.no_grad():
         model.eval()
-        embeddings = np.zeros((len(dataloader.dataset), 512))
+        embeddings = np.zeros((len(dataloader.dataset), 1000))
         labels = np.zeros(len(dataloader.dataset))
         k = 0
         for data0 in dataloader:
@@ -80,13 +80,14 @@ def plot_embeddings(embeddings, targets, classes, categories, title):
     embeddings_pca = PCA(n_components=200).fit_transform(embeddings)
     embeddings_tsne = TSNE(n_components=2).fit_transform(embeddings_pca)
 
+    fig, ax = plt.subplots()
     for i in range(len(classes)):
         j = classes[i]
         inds = np.where(targets==j)[0]
-        plt.scatter(embeddings_tsne[inds,0], embeddings_tsne[inds,1],
+        ax.scatter(embeddings_tsne[inds,0], embeddings_tsne[inds,1],
                     color=colors[i], marker='.', alpha=0.5, label=categories[j]['name'])
     # plt.legend(title='Class')
-    plt.title('Feature Vectors By Class ({})'.format(title))
+    ax.set_title('Feature Vectors By Class ({})'.format(title))
     plt.savefig('plots/tSNE_embedding_{}.png'.format(title))
     return embeddings_tsne
 
@@ -247,21 +248,21 @@ def main():
     )
 
     ### Uncomment for triplet model 
-    # embedding_net = models.resnet18(pretrained=True)
-    # embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
-
-    # # model = TripletNet(embedding_net)
-    # model = Embedder(embedding_net)
-    # model.cuda()
-
-    # model.load_state_dict(torch.load(model_path))
-
-    ### Uncomment for ResNet without last layer. 
     embedding_net = models.resnet18(pretrained=True)
     embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
-    embedding_net.load_state_dict(torch.load(model_path))
-    model = ResNetStripped(embedding_net)
+
+    # model = TripletNet(embedding_net)
+    model = Embedder(embedding_net)
     model.cuda()
+
+    model.load_state_dict(torch.load(model_path))
+
+    ### Uncomment for ResNet without last layer. 
+    # embedding_net = models.resnet18(pretrained=True)
+    # embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
+    # embedding_net.load_state_dict(torch.load(model_path))
+    # model = ResNetStripped(embedding_net)
+    # model.cuda()
 
     ### Uncomment for full ResNet
     # model = models.resnet18(pretrained=True)
