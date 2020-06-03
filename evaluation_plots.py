@@ -61,7 +61,7 @@ def test(model, device, test_loader):
 def extract_embeddings(dataloader, model):
     with torch.no_grad():
         model.eval()
-        embeddings = np.zeros((len(dataloader.dataset), 1000))
+        embeddings = np.zeros((len(dataloader.dataset), 512))
         labels = np.zeros(len(dataloader.dataset))
         k = 0
         for data0 in dataloader:
