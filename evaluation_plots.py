@@ -21,7 +21,7 @@ import matplotlib.cm as cm
 BATCH_SIZE_TRAIN = 512
 BATCH_SIZE_VAL = 512
 LOG_INTERVAL = 10
-NUM_CLASSES = 1000
+NUM_CLASSES = 267
 NUM_EPOCHS = 20
 NUM_VAL_CIS = 3307
 NUM_VAL_TRANS = 6382
@@ -61,13 +61,13 @@ def test(model, device, test_loader):
 def extract_embeddings(dataloader, model):
     with torch.no_grad():
         model.eval()
-        embeddings = np.zeros((len(dataloader.dataset), NUM_CLASSES))
+        embeddings = np.zeros((len(dataloader.dataset), 512))
         labels = np.zeros(len(dataloader.dataset))
         k = 0
         for data0 in dataloader:
             images = data0['image'].cuda()
             target = data0['target']
-            embeddings[k:k+len(images)] = model.get_embedding(images).data.cpu().numpy()
+            embeddings[k:k+len(images)] = np.squeeze(model.get_embedding(images).data.cpu().numpy())
             labels[k:k+len(images)] = target.numpy()
             k += len(images)
     return embeddings, labels
@@ -221,7 +221,7 @@ def main():
     img_path = '../efs/train_crop'
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
-    model_path = "models/triplet_batch_hard_7.pt"
+    model_path = "models/finetune_resnet18.pt"
     percent_data = 1
     # ~70k train, ~20k val
 
@@ -258,6 +258,7 @@ def main():
 
     ### Uncomment for ResNet without last layer. 
     embedding_net = models.resnet18(pretrained=True)
+    embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
     embedding_net.load_state_dict(torch.load(model_path))
     model = ResNetStripped(embedding_net)
     model.cuda()
@@ -298,7 +299,7 @@ def main():
     val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
     plot_embeddings(val_cis_embeddings, val_cis_targets, classes_rand, categories, 'val_cis')
 
-    val_trans_embeddings, val_trans_targets = extract_embeddings(val_cis_loader, model)
+    val_trans_embeddings, val_trans_targets = extract_embeddings(val_trans_loader, model)
     plot_embeddings(val_trans_embeddings, val_trans_targets, classes_rand, categories, 'val_trans')
 
     train_embeddings, train_targets = extract_embeddings(train_loader, model)
@@ -306,15 +307,15 @@ def main():
 
 
     # Plot error rate by number of examples in class.
-    plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
+   # plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
 
     # Plot 9 mistakes.
-    train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
-    val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
-    val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
-    print('Train mistakes:', train_mistakes)
-    print('Val cis mistakes:', val_cis_mistakes)
-    print('Val trans mistakes:', val_trans_mistakes)
+    #train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
+    #val_cis_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_cis.png')
+    #val_trans_mistakes = plot_mistakes(model, device, val_cis_loader, 'plots/mistakes_val_trans.png')
+    #print('Train mistakes:', train_mistakes)
+    #print('Val cis mistakes:', val_cis_mistakes)
+    #print('Val trans mistakes:', val_trans_mistakes)
 
 if __name__ == '__main__':
     main()
