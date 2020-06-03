@@ -223,7 +223,7 @@ def main():
     ann_path = '../efs/iwildcam2020_train_annotations.json'
     bbox_path = '../efs/iwildcam2020_megadetector_results.json'
     model_path = "models/finetune_resnet18.pt"
-    percent_data = 1
+    percent_data = 0.01
     # ~70k train, ~20k val
 
     print('Train Data')
@@ -258,17 +258,17 @@ def main():
     # model.load_state_dict(torch.load(model_path))
 
     ### Uncomment for ResNet without last layer. 
-    embedding_net = models.resnet18(pretrained=True)
-    embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
-    embedding_net.load_state_dict(torch.load(model_path))
-    model = ResNetStripped(embedding_net)
-    model.cuda()
+    # embedding_net = models.resnet18(pretrained=True)
+    # embedding_net.fc = torch.nn.Linear(512, NUM_CLASSES)
+    # embedding_net.load_state_dict(torch.load(model_path))
+    # model = ResNetStripped(embedding_net)
+    # model.cuda()
 
     ### Uncomment for full ResNet
-    # model = models.resnet18(pretrained=True)
-    # model.fc = torch.nn.Linear(512, NUM_CLASSES)
-    # model.to(device)
-    # model.load_state_dict(torch.load(model_path))
+    model = models.resnet18(pretrained=True)
+    model.fc = torch.nn.Linear(512, NUM_CLASSES)
+    model.to(device)
+    model.load_state_dict(torch.load(model_path))
 
 
     # Choose 10 random classes out of classes with over 1000 (not empty or human)
@@ -297,18 +297,18 @@ def main():
     classes_rand = [135, 136, 141, 144, 145, 146, 150, 173, 177, 204]
 
     # Plot embeddings
-    val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
-    plot_embeddings(val_cis_embeddings, val_cis_targets, classes_rand, categories, 'val_cis')
+    # val_cis_embeddings, val_cis_targets = extract_embeddings(val_cis_loader, model)
+    # plot_embeddings(val_cis_embeddings, val_cis_targets, classes_rand, categories, 'val_cis')
 
-    val_trans_embeddings, val_trans_targets = extract_embeddings(val_trans_loader, model)
-    plot_embeddings(val_trans_embeddings, val_trans_targets, classes_rand, categories, 'val_trans')
+    # val_trans_embeddings, val_trans_targets = extract_embeddings(val_trans_loader, model)
+    # plot_embeddings(val_trans_embeddings, val_trans_targets, classes_rand, categories, 'val_trans')
 
-    train_embeddings, train_targets = extract_embeddings(train_loader, model)
-    plot_embeddings(train_embeddings, train_targets, classes_rand, categories, 'train')
+    # train_embeddings, train_targets = extract_embeddings(train_loader, model)
+    # plot_embeddings(train_embeddings, train_targets, classes_rand, categories, 'train')
 
 
     # Plot error rate by number of examples in class.
-   # plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
+    plot_error_rate_by_num_ex_class(model, device, train_loader, val_cis_loader, val_trans_loader)
 
     # Plot 9 mistakes.
     #train_mistakes = plot_mistakes(model, device, train_loader, 'plots/mistakes_train.png')
