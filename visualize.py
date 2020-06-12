@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import json
+import matplotlib.cm as cm
 
 def plot_loss_vs_size():
     sizes = [0.001, 0.01, 0.1, 1]
@@ -65,20 +67,43 @@ def plot_train_test_loss_epoch(train_loss, test_loss, test_cis_loss, test_trans_
 def main():
     # plot_loss_vs_size()
     # plot_error_rate_vs_size()
-    num_val_cis = 3307
-    num_val_trans = 6382
-    num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
-    num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
+    # num_val_cis = 3307
+    # num_val_trans = 6382
+    # num_val_cis_frac = num_val_cis / (num_val_cis + num_val_trans)
+    # num_val_trans_frac = num_val_trans/ (num_val_cis + num_val_trans)
     
-    directory = "exp2/"
-    train_loss = np.load(directory + 'train_triplet_classifier_loss.npy')
-    test_cis_loss = np.load(directory + 'test_triplet_classifier_cis_loss.npy')
-    test_trans_loss = np.load(directory + 'test_triplet_classifier_trans_loss.npy')
-    print(train_loss)
-    print(test_cis_loss)
-    print(test_trans_loss)
-    test_loss = num_val_cis_frac * test_cis_loss + num_val_trans_frac * test_trans_loss
-    plot_train_test_loss_epoch(train_loss, test_loss, test_cis_loss, test_trans_loss, 20)
+    # directory = "exp2/"
+    # train_loss = np.load(directory + 'train_triplet_classifier_loss.npy')
+    # test_cis_loss = np.load(directory + 'test_triplet_classifier_cis_loss.npy')
+    # test_trans_loss = np.load(directory + 'test_triplet_classifier_trans_loss.npy')
+    # print(train_loss)
+    # print(test_cis_loss)
+    # print(test_trans_loss)
+    # test_loss = num_val_cis_frac * test_cis_loss + num_val_trans_frac * test_trans_loss
+    # plot_train_test_loss_epoch(train_loss, test_loss, test_cis_loss, test_trans_loss, 20)
+    ann_path = 'iwildcam2020_train_annotations.json'
+
+    with open(ann_path) as f:
+        annotations = json.load(f)
+    categories = annotations['categories']
+    categories_sort = sorted(categories, key=lambda k: k['count'], reverse=True)
+    categories_dict = {categories[i]['id']:i for i in range(len(categories))}
+
+    classes_rand = [135, 136, 141, 144, 145, 146, 150, 173, 0, 0]
+    hi = [9,71,90,91,96,97,101,103,111,112,115,137,139,142,144,147,152,153,163,259,290,291,299,300,309,315,316,317,321,344]
+    classes = [163, 97, 111,112,115,90,259,96]
+    names = ['African wild dog', 'spotted hyena', 'plains zebra', 'giraffe', "Günther's dik-dik", 'African elephant', "Grévy's zebra", 'impala']
+    lst = []
+    for h in classes:
+        lst.append(categories_dict[h])
+    print(lst)
+
+    # names = ['yellow-throated marten', 'banded linsang', 'sumatran serow', 'handsome spurfowl', 'mountain monkey', 'black-fronted duiker', "Carruther's mountain squirrel", 'tambourine dove', 'd', 'd']
+    colors = cm.rainbow(np.linspace(0, 1, len(names)))
+    for i in range(len(names)):
+        plt.scatter([0,1],[1,2], color=colors[i], label=names[i])
+    plt.legend()
+    plt.show()
 
 if __name__ == "__main__":
     main()

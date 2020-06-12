@@ -12,8 +12,9 @@ def plot_animals(categories):
         ids.append(str(categories_sort[i]['id']))
         counts.append(categories_sort[i]['count'])
 
-    plt.bar(ids[150:],counts[150:])
-    plt.title('Bottom Categories')
+    plt.bar(ids[:8],counts[:8])
+    print(names[:8])
+    plt.title('Top 8 Categories')
     plt.xlabel('Ids')
     plt.ylabel('Number of Images')
     plt.show()
@@ -159,13 +160,13 @@ def plot_detect_conf_all(annotations, detections):
 def main():
     with open('iwildcam2020_train_annotations.json') as f:
         annotations = json.load(f)
-    #plot_animals(annotations['categories'])
+    plot_animals(annotations['categories'])
     # plot_locations(annotations['images'], annotations['categories'], annotations['annotations'])
 
-    with open('iwildcam2020_megadetector_results.json') as f:
-        detections = json.load(f)['images']
+    # with open('iwildcam2020_megadetector_results.json') as f:
+    #     detections = json.load(f)['images']
 
-    plot_detect_conf_all(annotations, detections)
+    # plot_detect_conf_all(annotations, detections)
 
 if __name__ == '__main__':
     main()
