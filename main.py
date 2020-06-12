@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import torch
 import torch.optim as optim
+import torch.nn as nn
 from thop import profile, clever_format
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -128,9 +129,9 @@ bbox_path, percent_data, transform=utils.test_transform)
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)
     model.to(device)
-    flops, params = profile(model, inputs=(torch.randn(1, 3, 32, 32).to(device),))
-    flops, params = clever_format([flops, params])
-    print('# Model Params: {} FLOPs: {}'.format(params, flops))
+    #flops, params = profile(model, inputs=(torch.randn(1, 3, 32, 32).to(device),))
+    #flops, params = clever_format([flops, params])
+    #print('# Model Params: {} FLOPs: {}'.format(params, flops))
     optimizer = optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
     c = 267
 
@@ -141,9 +142,9 @@ bbox_path, percent_data, transform=utils.test_transform)
         os.mkdir('results')
     best_acc = 0.0
     for epoch in range(1, epochs + 1):
-        train_loss = train(model, train_loader, optimizer)
+        train_loss = train(device, model, train_loader, optimizer)
         results['train_loss'].append(train_loss)
-        test_acc_1, test_acc_5 = test(model, memory_loader, test_loader)
+        test_acc_1, test_acc_5 = test(device, model, memory_loader, test_loader)
         results['test_acc@1'].append(test_acc_1)
         results['test_acc@5'].append(test_acc_5)
         # save statistics
